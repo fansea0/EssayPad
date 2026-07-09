@@ -373,7 +373,7 @@ struct DiaryEditorView: View {
     }
 
     private var editorArea: some View {
-        MarkdownStyledEditor(
+        DiaryMarkdownStyledEditor(
             text: content,
             onTextChange: { newValue in
                 if content != newValue {

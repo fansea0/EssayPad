@@ -17,8 +17,8 @@
 		2198DE1C5DF7FE80758DE474 /* ConfettiView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C141E8CADA075958DD594557 /* ConfettiView.swift */; };
 		24DEBF82C1C805DDF3D74BB8 /* ClipboardHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D91F0BE32F00E4C1FC5792C /* ClipboardHelper.swift */; };
 		26D942146AD7037AE9FB5464 /* WeeklyReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 276AF7CC9CB9C5ED91330E13 /* WeeklyReportView.swift */; };
-		2C17796EEAC80401CE5B96B6 /* NoteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5787C32582BF2858D721021 /* NoteStore.swift */; };
 		2F610A969012B30108FFCFEC /* MarkdownNoteImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17668F8BE78E374DC9FA6A2 /* MarkdownNoteImporter.swift */; };
+		2C17796EEAC80401CE5B96B6 /* NoteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5787C32582BF2858D721021 /* NoteStore.swift */; };
 		3B96804C9ABD13F0CB570826 /* APIClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 657AEBD26D8ED1D24D7E36F7 /* APIClientTests.swift */; };
 		3D34CEF7D08D50E6C1692933 /* TasksView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A551B0B7029BF083527B432F /* TasksView.swift */; };
 		467A86065715A4DE32F92DF6 /* NoteCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FBF1C03ADDFD1A398300616 /* NoteCategory.swift */; };
@@ -37,15 +37,16 @@
 		8F855F44E1E57E22E9B5E64F /* TodoTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6948D020DF43C74893802AD /* TodoTask.swift */; };
 		962E6CB4104D6AA66EF8C6D9 /* DiaryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2022817F379E98E7AD3DFE16 /* DiaryStore.swift */; };
 		9757A2CA2165DE82CD436B25 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9718654A6A515FFE329D8995 /* SettingsView.swift */; };
-		9C5723A9E2DDAF6B06B31569 /* PomodoroSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1F85941D42DDFC9FB77580 /* PomodoroSession.swift */; };
 		9EAC663EACF30BBA836BD00C /* AppIconRuntime.png in Resources */ = {isa = PBXBuildFile; fileRef = 20ECDAEDF921249EC22B659F /* AppIconRuntime.png */; };
 		9F889D4F3BE55F61BB7E6FFF /* DiaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F00D22B2E4A4F28F25D66E4 /* DiaryView.swift */; };
+		9C5723A9E2DDAF6B06B31569 /* PomodoroSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1F85941D42DDFC9FB77580 /* PomodoroSession.swift */; };
 		A4F2A55F984D508B2A3D8B3F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B25011E1C7090BD5DE2F8BD /* ContentView.swift */; };
 		AFFB257C1C4A5A3EB5C1F965 /* ImagePasteHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7589474D9C8A3D5C6BD421E5 /* ImagePasteHelper.swift */; };
-		C167A8AA3D237512F20905BC /* PomodoroTimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F286D90D36F9E7783AA5DBEB /* PomodoroTimerView.swift */; };
 		C5C6F65F266D6ED6E732461D /* MarkdownNoteImporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56AEBA6691C9A906282E0EB2 /* MarkdownNoteImporterTests.swift */; };
-		C811F4D72D55276AC801C02D /* FloatingPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8266BB9273F7F8B9152BE57 /* FloatingPanel.swift */; };
+		C167A8AA3D237512F20905BC /* PomodoroTimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F286D90D36F9E7783AA5DBEB /* PomodoroTimerView.swift */; };
 		C92E4CF6546644DD387929FE /* TaskPickerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07F5735FF1067EA0668D3E7B /* TaskPickerSheet.swift */; };
+		C811F4D72D55276AC801C02D /* FloatingPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8266BB9273F7F8B9152BE57 /* FloatingPanel.swift */; };
+		D1A9F001D1A9F001D1A9F001 /* DiaryMarkdownStyledEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A9F002D1A9F002D1A9F002 /* DiaryMarkdownStyledEditor.swift */; };
 		D0638F659648B769DAF5F8A4 /* NoteListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4F88EF0641206C066C5F19 /* NoteListView.swift */; };
 		FA34BA554B2DE77E4C15D82F /* TaskRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7330CF506E6EE1A068C2B13D /* TaskRow.swift */; };
 		FA70F1A4C8FEC7A8249269A5 /* SoundPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87CB667014ADD9D1DF3AB2A2 /* SoundPlayer.swift */; };
@@ -89,9 +90,9 @@
 		812FF593C4ED1342F6882072 /* EssayPadApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EssayPadApp.swift; sourceTree = "<group>"; };
 		820A6B3BA222330F51236D80 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		87CB667014ADD9D1DF3AB2A2 /* SoundPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundPlayer.swift; sourceTree = "<group>"; };
-		8B25011E1C7090BD5DE2F8BD /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		8FC9FCA1F1C79BA8C54B8DC2 /* DiaryEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiaryEntry.swift; sourceTree = "<group>"; };
 		9718654A6A515FFE329D8995 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		8B25011E1C7090BD5DE2F8BD /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A05FC93BCADD138E49A2DF3D /* NoteEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteEditorView.swift; sourceTree = "<group>"; };
 		A551B0B7029BF083527B432F /* TasksView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasksView.swift; sourceTree = "<group>"; };
 		B17668F8BE78E374DC9FA6A2 /* MarkdownNoteImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownNoteImporter.swift; sourceTree = "<group>"; };
@@ -100,6 +101,7 @@
 		CBE062ACD71839471462A28C /* PomodoroSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PomodoroSetupView.swift; sourceTree = "<group>"; };
 		CC29738002B3777C35045D10 /* Endpoints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Endpoints.swift; sourceTree = "<group>"; };
 		CC4F88EF0641206C066C5F19 /* NoteListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteListView.swift; sourceTree = "<group>"; };
+		D1A9F002D1A9F002D1A9F002 /* DiaryMarkdownStyledEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiaryMarkdownStyledEditor.swift; sourceTree = "<group>"; };
 		D432411D51F0D96E097AFC9B /* QuickCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickCaptureView.swift; sourceTree = "<group>"; };
 		E5787C32582BF2858D721021 /* NoteStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteStore.swift; sourceTree = "<group>"; };
 		EC261AD0BF07682BC108410B /* EssayPadTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = EssayPadTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -155,6 +157,7 @@
 		762B78D8F258FE77306D502C /* Markdown */ = {
 			isa = PBXGroup;
 			children = (
+				D1A9F002D1A9F002D1A9F002 /* DiaryMarkdownStyledEditor.swift */,
 				717A225F39EDDF1C46B12D18 /* MarkdownParser.swift */,
 				6D04CF5D5DF8C8CD5D962782 /* MarkdownStyledEditor.swift */,
 			);
@@ -361,6 +364,7 @@
 				2F610A969012B30108FFCFEC /* MarkdownNoteImporter.swift in Sources */,
 				1B6288C9A9FE02B2B90D7E4B /* MarkdownParser.swift in Sources */,
 				108F70D65FAE49116D14DC6B /* MarkdownStyledEditor.swift in Sources */,
+				D1A9F001D1A9F001D1A9F001 /* DiaryMarkdownStyledEditor.swift in Sources */,
 				5F59F0ACCC8A177691EBDC28 /* Note.swift in Sources */,
 				467A86065715A4DE32F92DF6 /* NoteCategory.swift in Sources */,
 				702F74988D5CD7DF92A6D20A /* NoteEditorView.swift in Sources */,
