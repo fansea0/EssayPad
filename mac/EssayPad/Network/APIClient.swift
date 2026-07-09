@@ -108,6 +108,72 @@ actor APIClient {
         let _: Empty = try await request(Endpoints.noteDetail(id: id), method: "DELETE")
     }
 
+    func listDiaries(mode: DiaryListMode = .all, keyword: String = "") async throws -> (Int, [DiaryEntry]) {
+        var comps = URLComponents(url: Endpoints.diaries, resolvingAgainstBaseURL: false)!
+        var items: [URLQueryItem] = [.init(name: "mode", value: mode.rawValue)]
+        let trimmed = keyword.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmed.isEmpty {
+            items.append(.init(name: "keyword", value: trimmed))
+        }
+        comps.queryItems = items
+        struct R: Decodable { let total: Int; let list: [DiaryEntry] }
+        let r: R = try await request(comps.url!, method: "GET")
+        return (r.total, r.list)
+    }
+
+    func getDiary(id: Int64) async throws -> DiaryEntry {
+        try await request(Endpoints.diaryDetail(id: id), method: "GET")
+    }
+
+    func getDiaryByDate(date: Int64) async throws -> DiaryEntry {
+        var comps = URLComponents(url: Endpoints.diaryByDate, resolvingAgainstBaseURL: false)!
+        comps.queryItems = [.init(name: "date", value: String(date))]
+        return try await request(comps.url!, method: "GET")
+    }
+
+    func saveDiary(date: Int64, title: String, content: String,
+                   mood: Int, status: Int, activity: Int) async throws -> DiaryEntry {
+        struct Body: Encodable {
+            let diaryDate: Int64
+            let title: String
+            let content: String
+            let mood: Int
+            let status: Int
+            let activity: Int
+            enum CodingKeys: String, CodingKey {
+                case diaryDate = "diary_date"
+                case title, content, mood, status, activity
+            }
+        }
+        return try await request(
+            Endpoints.diaries,
+            method: "POST",
+            body: Body(diaryDate: date, title: title, content: content,
+                       mood: mood, status: status, activity: activity)
+        )
+    }
+
+    func updateDiary(id: Int64, title: String, content: String,
+                     mood: Int, status: Int, activity: Int) async throws -> DiaryEntry {
+        struct Body: Encodable {
+            let title: String
+            let content: String
+            let mood: Int
+            let status: Int
+            let activity: Int
+        }
+        return try await request(
+            Endpoints.diaryDetail(id: id),
+            method: "PUT",
+            body: Body(title: title, content: content, mood: mood, status: status, activity: activity)
+        )
+    }
+
+    func deleteDiary(id: Int64) async throws {
+        struct Empty: Decodable {}
+        let _: Empty = try await request(Endpoints.diaryDetail(id: id), method: "DELETE")
+    }
+
     struct WeeklyReport: Codable {
         let id: Int64
         let preset: String

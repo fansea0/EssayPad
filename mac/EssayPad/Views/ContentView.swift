@@ -11,6 +11,7 @@ struct ContentView: View {
     @State private var serverOnline = true
     @State private var showShortcuts = false
     @State private var mainMode: MainMode = .notes
+    @State private var diaryStore = DiaryStore()
 
     @State private var tasks: [TodoTask] = []
     @State private var taskGroup: TaskGroup = .today
@@ -21,14 +22,14 @@ struct ContentView: View {
     @State private var pomodoroSetupTask: TodoTask? = nil
     @State private var pomodoroSetupFree: Bool = false
 
-    enum MainMode { case notes, tasks }
+    enum MainMode { case notes, tasks, diary }
 
     var body: some View {
         NavigationSplitView {
             VStack(spacing: 0) {
                 HeaderBar(title: "EssayPad",
-                          subtitle: mainMode == .notes ? store.selectedCategory.name : "任务面板",
-                          subtitleIcon: mainMode == .notes ? store.selectedCategory.icon : "checklist")
+                          subtitle: headerSubtitle,
+                          subtitleIcon: headerSubtitleIcon)
                     .padding(.horizontal, 16)
                     .padding(.top, 14)
                     .padding(.bottom, 10)
@@ -36,6 +37,8 @@ struct ContentView: View {
                 if mainMode == .notes {
                     NoteListView(selection: $selection, showEditor: $showEditor,
                                  searchText: $searchText, tasks: tasks)
+                } else if mainMode == .diary {
+                    DiarySidebarView(store: diaryStore)
                 }
 
                 Spacer(minLength: 0)
@@ -54,6 +57,8 @@ struct ContentView: View {
                             .transition(.opacity)
                     } else if mainMode == .tasks {
                         tasksContainer
+                    } else if mainMode == .diary {
+                        diaryContainer
                     } else {
                         notesContainer
                     }
@@ -99,9 +104,14 @@ struct ContentView: View {
             newEditorID = "new-\(UUID().uuidString)"
         }
         .onChange(of: mainMode) { _, new in
-            NSLog("[ES] ContentView mainMode=\(new == .tasks ? "tasks" : "notes")")
+            NSLog("[ES] ContentView mainMode=\(mainModeName(new))")
             if new == .tasks {
                 Task { await loadTasks() }
+            } else if new == .diary {
+                Task {
+                    await diaryStore.load()
+                    await diaryStore.openToday()
+                }
             }
         }
         .onChange(of: taskGroup) { _, new in
@@ -134,9 +144,11 @@ struct ContentView: View {
                 .help("基于近 7 天的随笔生成 AI 周报")
             }
             ToolbarItemGroup(placement: .navigation) {
-                TextField("搜索…", text: $searchText)
-                    .textFieldStyle(.roundedBorder)
-                    .frame(width: 180)
+                if mainMode == .notes {
+                    TextField("搜索…", text: $searchText)
+                        .textFieldStyle(.roundedBorder)
+                        .frame(width: 180)
+                }
             }
         }
         .frame(minWidth: 880, minHeight: 560)
@@ -183,6 +195,11 @@ struct ContentView: View {
         )
     }
 
+    private var diaryContainer: some View {
+        DiaryEditorView(store: diaryStore)
+            .id("diary-\(diaryStore.selectedEntry?.id ?? 0)-\(diaryStore.selectedDate)")
+    }
+
     private func loadTasks() async {
         NSLog("[ES] loadTasks START taskGroup=\(taskGroup.rawValue) tasks.count=\(tasks.count)")
         tasksLoading = true
@@ -204,6 +221,39 @@ struct ContentView: View {
 
     private func totalCount() -> Int {
         store.notesByCategory.values.reduce(0) { $0 + $1.count }
+    }
+
+    private var headerSubtitle: String {
+        switch mainMode {
+        case .notes:
+            return store.selectedCategory.name
+        case .tasks:
+            return "任务面板"
+        case .diary:
+            return "日记"
+        }
+    }
+
+    private var headerSubtitleIcon: String {
+        switch mainMode {
+        case .notes:
+            return store.selectedCategory.icon
+        case .tasks:
+            return "checklist"
+        case .diary:
+            return "book.closed"
+        }
+    }
+
+    private func mainModeName(_ mode: MainMode) -> String {
+        switch mode {
+        case .notes:
+            return "notes"
+        case .tasks:
+            return "tasks"
+        case .diary:
+            return "diary"
+        }
     }
 
     private func openNote(_ id: Int64) async {
@@ -260,7 +310,7 @@ private struct StatusBar: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
             Divider().frame(height: 12)
-            Text(mainMode == .notes ? "总笔记 \(totalCount) 条" : "任务面板")
+            Text(statusText)
                 .font(.caption)
                 .foregroundColor(.secondary)
             Spacer()
@@ -272,6 +322,17 @@ private struct StatusBar: View {
         .padding(.vertical, 6)
         .background(Color(nsColor: .controlBackgroundColor))
     }
+
+    private var statusText: String {
+        switch mainMode {
+        case .notes:
+            return "总笔记 \(totalCount) 条"
+        case .tasks:
+            return "任务面板"
+        case .diary:
+            return "日记"
+        }
+    }
 }
 
 private struct ModeSwitcher: View {
@@ -281,6 +342,7 @@ private struct ModeSwitcher: View {
         HStack(spacing: 0) {
             modeButton(.notes, icon: "note.text", label: "笔记")
             modeButton(.tasks, icon: "checklist", label: "任务")
+            modeButton(.diary, icon: "book.closed", label: "日记")
         }
         .padding(2)
         .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 8))
@@ -307,7 +369,18 @@ private struct ModeSwitcher: View {
             .contentShape(Rectangle())   // 关键:让整个矩形都接收点击,不止图标/文字
         }
         .buttonStyle(.plain)
-        .help(mode == .notes ? "切换到笔记" : "切换到任务")
+        .help(helpText(for: mode))
+    }
+
+    private func helpText(for mode: ContentView.MainMode) -> String {
+        switch mode {
+        case .notes:
+            return "切换到笔记"
+        case .tasks:
+            return "切换到任务"
+        case .diary:
+            return "切换到日记"
+        }
     }
 }
 
