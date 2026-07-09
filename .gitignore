@@ -1,0 +1,13 @@
+# Go
+server/data/*.db
+server/data/*.db-journal
+server/bin/
+server/.env
+
+# macOS
+mac/build/
+mac/DerivedData/
+mac/*.xcodeproj/xcuserdata/
+mac/*.xcworkspace/xcuserdata/
+*.swp
+.DS_Store

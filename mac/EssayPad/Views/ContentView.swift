@@ -1,0 +1,330 @@
+import SwiftUI
+import AppKit
+
+struct ContentView: View {
+    @Environment(NoteStore.self) private var store
+    @State private var selection: Note?
+    @State private var showEditor = false
+    @State private var newEditorID: String? = nil
+    @State private var searchText = ""
+    @State private var showWeekly = false
+    @State private var serverOnline = true
+    @State private var showShortcuts = false
+    @State private var mainMode: MainMode = .notes
+
+    @State private var tasks: [TodoTask] = []
+    @State private var taskGroup: TaskGroup = .today
+    @State private var tasksLoading = false
+    @State private var detailTask: TodoTask?
+    @State private var confettiAnchor: CGPoint?
+    @State private var tasksError: String?
+    @State private var pomodoroSetupTask: TodoTask? = nil
+    @State private var pomodoroSetupFree: Bool = false
+
+    enum MainMode { case notes, tasks }
+
+    var body: some View {
+        NavigationSplitView {
+            VStack(spacing: 0) {
+                HeaderBar(title: "EssayPad",
+                          subtitle: mainMode == .notes ? store.selectedCategory.name : "任务面板",
+                          subtitleIcon: mainMode == .notes ? store.selectedCategory.icon : "checklist")
+                    .padding(.horizontal, 16)
+                    .padding(.top, 14)
+                    .padding(.bottom, 10)
+
+                if mainMode == .notes {
+                    NoteListView(selection: $selection, showEditor: $showEditor,
+                                 searchText: $searchText, tasks: tasks)
+                }
+
+                Spacer(minLength: 0)
+
+                ModeSwitcher(current: $mainMode)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 5)
+            }
+            .frame(minWidth: 300)
+            .navigationSplitViewColumnWidth(min: 300, ideal: 340)
+        } detail: {
+            VStack(spacing: 0) {
+                ZStack {
+                    if showWeekly {
+                        WeeklyReportView(onClose: { showWeekly = false })
+                            .transition(.opacity)
+                    } else if mainMode == .tasks {
+                        tasksContainer
+                    } else {
+                        notesContainer
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                Divider()
+                StatusBar(totalCount: totalCount(),
+                           serverOnline: serverOnline,
+                           mainMode: mainMode)
+            }
+            .sheet(item: $pomodoroSetupTask) { task in
+                PomodoroSetupView(task: task) { minutes in
+                    pomodoroSetupTask = nil
+                    PomodoroWindowController.shared.start(task: task, plannedMinutes: minutes)
+                } onCancel: {
+                    pomodoroSetupTask = nil
+                }
+            }
+            .sheet(isPresented: $pomodoroSetupFree) {
+                PomodoroSetupView(task: nil) { minutes in
+                    pomodoroSetupFree = false
+                    PomodoroWindowController.shared.start(task: nil, plannedMinutes: minutes)
+                } onCancel: {
+                    pomodoroSetupFree = false
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .startPomodoroFree)) { _ in
+                pomodoroSetupFree = true
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .startPomodoroCountUp)) { _ in
+                PomodoroWindowController.shared.startCountUp(task: nil)
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .startPomodoroRest)) { _ in
+                PomodoroWindowController.shared.startRest(minutes: 5)
+            }
+        }
+        .task {
+            await store.load()
+            serverOnline = await LocalServerManager.isRunning()
+        }
+        .onChange(of: showEditor) { _, new in
+            newEditorID = "new-\(UUID().uuidString)"
+        }
+        .onChange(of: mainMode) { _, new in
+            NSLog("[ES] ContentView mainMode=\(new == .tasks ? "tasks" : "notes")")
+            if new == .tasks {
+                Task { await loadTasks() }
+            }
+        }
+        .onChange(of: taskGroup) { _, new in
+            NSLog("[ES] ContentView taskGroup changed to \(new.rawValue), reloading")
+            if mainMode == .tasks {
+                Task { await loadTasks() }
+            }
+        }
+        .onChange(of: store.notesByCategory) { _, _ in
+            if let sel = selection {
+                let allNotes = store.notesByCategory.values.flatMap { $0 }
+                if let updated = allNotes.first(where: { $0.id == sel.id }), updated != sel {
+                    NSLog("[ES] ContentView syncing selection id=\(sel.id) old_title=\(sel.title) new_title=\(updated.title)")
+                    selection = updated
+                }
+            }
+        }
+        .toolbar {
+            ToolbarItemGroup(placement: .primaryAction) {
+                Button {
+                    showWeekly = true
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "sparkles")
+                        Text("AI 周报")
+                            .font(.system(size: 13, weight: .medium))
+                    }
+                    .padding(.horizontal, 4)
+                }
+                .help("基于近 7 天的随笔生成 AI 周报")
+            }
+            ToolbarItemGroup(placement: .navigation) {
+                TextField("搜索…", text: $searchText)
+                    .textFieldStyle(.roundedBorder)
+                    .frame(width: 180)
+            }
+        }
+        .frame(minWidth: 880, minHeight: 560)
+        .onReceive(NotificationCenter.default.publisher(for: .toggleShortcuts)) { _ in
+            showShortcuts.toggle()
+        }
+        .sheet(isPresented: $showShortcuts) {
+            ShortcutsSheet()
+        }
+    }
+
+    @ViewBuilder
+    private var notesContainer: some View {
+        if showEditor || selection != nil {
+            NoteEditorView(note: showEditor ? nil : selection,
+                           showEditor: $showEditor,
+                           initialCategory: store.selectedCategory)
+                .id(showEditor
+                    ? (newEditorID ?? "new-init")
+                    : "edit-\(selection?.id ?? 0)")
+        } else {
+            EmptyDetailView()
+        }
+    }
+
+    @ViewBuilder
+    private var tasksContainer: some View {
+        TasksView(
+            tasks: $tasks,
+            selectedGroup: $taskGroup,
+            loading: $tasksLoading,
+            detailTask: $detailTask,
+            confettiAnchor: $confettiAnchor,
+            error: $tasksError,
+            onLoad: { Task { await loadTasks() } },
+            onNavigateToNote: { noteId in
+                detailTask = nil
+                mainMode = .notes
+                Task { await openNote(noteId) }
+            },
+            onStartPomodoro: { task in
+                pomodoroSetupTask = task
+            }
+        )
+    }
+
+    private func loadTasks() async {
+        NSLog("[ES] loadTasks START taskGroup=\(taskGroup.rawValue) tasks.count=\(tasks.count)")
+        tasksLoading = true
+        defer {
+            tasksLoading = false
+            NSLog("[ES] loadTasks END taskGroup=\(taskGroup.rawValue) tasks.count=\(tasks.count) loading=\(tasksLoading)")
+        }
+        do {
+            let result = try await APIClient.shared.listTasks(group: taskGroup)
+            let titles = result.map { "id=\($0.id) title='\($0.title)' priority=\($0.priority) status=\($0.status)" }.joined(separator: " | ")
+            NSLog("[ES] loadTasks GOT \(result.count) tasks: [\(titles)]")
+            tasks = result
+            tasksError = nil
+        } catch {
+            NSLog("[ES] loadTasks FAIL: \(error)")
+            tasksError = (error as? APIError)?.errorDescription ?? error.localizedDescription
+        }
+    }
+
+    private func totalCount() -> Int {
+        store.notesByCategory.values.reduce(0) { $0 + $1.count }
+    }
+
+    private func openNote(_ id: Int64) async {
+        do {
+            let note = try await APIClient.shared.getNote(id: id)
+            if let cat = NoteCategory(rawValue: note.category) {
+                store.selectedCategory = cat
+            }
+            selection = note
+            showEditor = false
+        } catch {
+            tasksError = (error as? APIError)?.errorDescription ?? error.localizedDescription
+        }
+    }
+}
+
+private struct HeaderBar: View {
+    let title: String
+    let subtitle: String
+    let subtitleIcon: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.system(size: 22, weight: .bold))
+                .foregroundStyle(.primary)
+            HStack(spacing: 6) {
+                Image(systemName: subtitleIcon)
+                    .foregroundStyle(Color.accentColor)
+                Text(subtitle)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+private struct StatusBar: View {
+    let totalCount: Int
+    let serverOnline: Bool
+    let mainMode: ContentView.MainMode
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Circle()
+                .fill(serverOnline ? Color.green : Color.red)
+                .frame(width: 8, height: 8)
+                .overlay(
+                    Circle()
+                        .stroke(Color.black.opacity(0.08), lineWidth: 0.5)
+                )
+            Text(serverOnline ? "后端在线" : "后端离线")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            Divider().frame(height: 12)
+            Text(mainMode == .notes ? "总笔记 \(totalCount) 条" : "任务面板")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            Spacer()
+            Text("⌥Space 快速记一笔")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 6)
+        .background(Color(nsColor: .controlBackgroundColor))
+    }
+}
+
+private struct ModeSwitcher: View {
+    @Binding var current: ContentView.MainMode
+
+    var body: some View {
+        HStack(spacing: 0) {
+            modeButton(.notes, icon: "note.text", label: "笔记")
+            modeButton(.tasks, icon: "checklist", label: "任务")
+        }
+        .padding(2)
+        .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 8))
+    }
+
+    private func modeButton(_ mode: ContentView.MainMode, icon: String, label: String) -> some View {
+        Button {
+            current = mode
+        } label: {
+            HStack(spacing: 3) {
+                Image(systemName: icon)
+                    .font(.system(size: 10, weight: .medium))
+                Text(label)
+                    .font(.system(size: 10, weight: .medium))
+            }
+            .frame(maxWidth: .infinity, minHeight: 20)
+            .padding(.vertical, 2)
+            .padding(.horizontal, 6)
+            .background(
+                current == mode ? Color.accentColor : Color.clear,
+                in: RoundedRectangle(cornerRadius: 5)
+            )
+            .foregroundStyle(current == mode ? Color.white : Color.primary)
+            .contentShape(Rectangle())   // 关键:让整个矩形都接收点击,不止图标/文字
+        }
+        .buttonStyle(.plain)
+        .help(mode == .notes ? "切换到笔记" : "切换到任务")
+    }
+}
+
+private struct EmptyDetailView: View {
+    var body: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "note.text.badge.plus")
+                .font(.system(size: 56, weight: .light))
+                .foregroundStyle(.secondary)
+            Text("还没有内容")
+                .font(.title3)
+                .foregroundStyle(.secondary)
+            Text("按 ⌥Space 快速记一笔,或点列表 + 新建")
+                .font(.subheadline)
+                .foregroundStyle(.tertiary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(nsColor: .windowBackgroundColor))
+    }
+}

@@ -1,0 +1,583 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		07F1CEE0DD43C44F783CE188 /* PomodoroSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBE062ACD71839471462A28C /* PomodoroSetupView.swift */; };
+		097A7C4AB430CE3F8E90A1F3 /* ShortcutsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF4C9B071F762D3C6966A478 /* ShortcutsSheet.swift */; };
+		108F70D65FAE49116D14DC6B /* MarkdownStyledEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D04CF5D5DF8C8CD5D962782 /* MarkdownStyledEditor.swift */; };
+		10B4EA2A33CED492A72B3DA7 /* PomodoroRestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B04CBF5B67F3E2C28A7B02A /* PomodoroRestView.swift */; };
+		125CEE5131441172F6EA8023 /* Endpoints.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC29738002B3777C35045D10 /* Endpoints.swift */; };
+		18BE3F07FD19A2DC8E161CA5 /* QuickCaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D432411D51F0D96E097AFC9B /* QuickCaptureView.swift */; };
+		1B6288C9A9FE02B2B90D7E4B /* MarkdownParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 717A225F39EDDF1C46B12D18 /* MarkdownParser.swift */; };
+		2198DE1C5DF7FE80758DE474 /* ConfettiView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C141E8CADA075958DD594557 /* ConfettiView.swift */; };
+		24DEBF82C1C805DDF3D74BB8 /* ClipboardHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D91F0BE32F00E4C1FC5792C /* ClipboardHelper.swift */; };
+		26D942146AD7037AE9FB5464 /* WeeklyReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 276AF7CC9CB9C5ED91330E13 /* WeeklyReportView.swift */; };
+		2C17796EEAC80401CE5B96B6 /* NoteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5787C32582BF2858D721021 /* NoteStore.swift */; };
+		3B96804C9ABD13F0CB570826 /* APIClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 657AEBD26D8ED1D24D7E36F7 /* APIClientTests.swift */; };
+		3D34CEF7D08D50E6C1692933 /* TasksView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A551B0B7029BF083527B432F /* TasksView.swift */; };
+		467A86065715A4DE32F92DF6 /* NoteCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FBF1C03ADDFD1A398300616 /* NoteCategory.swift */; };
+		492EDF83DEBF8281754D8D48 /* EssayPadApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 812FF593C4ED1342F6882072 /* EssayPadApp.swift */; };
+		5ACAB76A643C134C3471DBFA /* MarkdownParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66BDAE90F30E9D38899E8CBD /* MarkdownParserTests.swift */; };
+		5F59F0ACCC8A177691EBDC28 /* Note.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAE31F2194B7319C9481D36D /* Note.swift */; };
+		632328CD368BCABCD7454743 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CB35417E5776EDAA6B33348 /* APIClient.swift */; };
+		6879CA48DC1984BEEFA064AD /* PomodoroWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51FDB3E39923CE8D358BB137 /* PomodoroWindowController.swift */; };
+		69D763DA85A65AF396B11E36 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 101EB1AF4C43D05FB86147D2 /* AppDelegate.swift */; };
+		702F74988D5CD7DF92A6D20A /* NoteEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A05FC93BCADD138E49A2DF3D /* NoteEditorView.swift */; };
+		7B57BB5E6FD5673FEA44B635 /* TaskDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2736A475257AC626C3AECB22 /* TaskDetailView.swift */; };
+		80BAEE3F874508857871E381 /* GlobalHotkey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FC007BB1D74F116E517F464 /* GlobalHotkey.swift */; };
+		8B9A0BF16FCA560CDA55C1D8 /* LocalServerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010E3EAF2DE9C36568DE23A7 /* LocalServerManager.swift */; };
+		8F855F44E1E57E22E9B5E64F /* TodoTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6948D020DF43C74893802AD /* TodoTask.swift */; };
+		9C5723A9E2DDAF6B06B31569 /* PomodoroSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1F85941D42DDFC9FB77580 /* PomodoroSession.swift */; };
+		A4F2A55F984D508B2A3D8B3F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B25011E1C7090BD5DE2F8BD /* ContentView.swift */; };
+		AFFB257C1C4A5A3EB5C1F965 /* ImagePasteHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7589474D9C8A3D5C6BD421E5 /* ImagePasteHelper.swift */; };
+		C167A8AA3D237512F20905BC /* PomodoroTimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F286D90D36F9E7783AA5DBEB /* PomodoroTimerView.swift */; };
+		C811F4D72D55276AC801C02D /* FloatingPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8266BB9273F7F8B9152BE57 /* FloatingPanel.swift */; };
+		D0638F659648B769DAF5F8A4 /* NoteListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4F88EF0641206C066C5F19 /* NoteListView.swift */; };
+		FA34BA554B2DE77E4C15D82F /* TaskRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7330CF506E6EE1A068C2B13D /* TaskRow.swift */; };
+		FA70F1A4C8FEC7A8249269A5 /* SoundPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87CB667014ADD9D1DF3AB2A2 /* SoundPlayer.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		83A0FEDD3C3FE904BA4038B0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A5FAC7F493F23F8295DCC642 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E255ABFD9F65E3E770B0CBCD;
+			remoteInfo = EssayPad;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		010E3EAF2DE9C36568DE23A7 /* LocalServerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalServerManager.swift; sourceTree = "<group>"; };
+		0CB35417E5776EDAA6B33348 /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		101EB1AF4C43D05FB86147D2 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		2736A475257AC626C3AECB22 /* TaskDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDetailView.swift; sourceTree = "<group>"; };
+		276AF7CC9CB9C5ED91330E13 /* WeeklyReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyReportView.swift; sourceTree = "<group>"; };
+		3484746570512782B2494E03 /* EssayPad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EssayPad.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3CC7B9EFD8E402F6F31FC77C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		4B04CBF5B67F3E2C28A7B02A /* PomodoroRestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PomodoroRestView.swift; sourceTree = "<group>"; };
+		4D91F0BE32F00E4C1FC5792C /* ClipboardHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardHelper.swift; sourceTree = "<group>"; };
+		51FDB3E39923CE8D358BB137 /* PomodoroWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PomodoroWindowController.swift; sourceTree = "<group>"; };
+		5FC007BB1D74F116E517F464 /* GlobalHotkey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalHotkey.swift; sourceTree = "<group>"; };
+		657AEBD26D8ED1D24D7E36F7 /* APIClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClientTests.swift; sourceTree = "<group>"; };
+		66BDAE90F30E9D38899E8CBD /* MarkdownParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownParserTests.swift; sourceTree = "<group>"; };
+		6C1F85941D42DDFC9FB77580 /* PomodoroSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PomodoroSession.swift; sourceTree = "<group>"; };
+		6D04CF5D5DF8C8CD5D962782 /* MarkdownStyledEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownStyledEditor.swift; sourceTree = "<group>"; };
+		717A225F39EDDF1C46B12D18 /* MarkdownParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownParser.swift; sourceTree = "<group>"; };
+		7330CF506E6EE1A068C2B13D /* TaskRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRow.swift; sourceTree = "<group>"; };
+		7589474D9C8A3D5C6BD421E5 /* ImagePasteHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePasteHelper.swift; sourceTree = "<group>"; };
+		7FBF1C03ADDFD1A398300616 /* NoteCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteCategory.swift; sourceTree = "<group>"; };
+		812FF593C4ED1342F6882072 /* EssayPadApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EssayPadApp.swift; sourceTree = "<group>"; };
+		87CB667014ADD9D1DF3AB2A2 /* SoundPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundPlayer.swift; sourceTree = "<group>"; };
+		8B25011E1C7090BD5DE2F8BD /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A05FC93BCADD138E49A2DF3D /* NoteEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteEditorView.swift; sourceTree = "<group>"; };
+		A551B0B7029BF083527B432F /* TasksView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasksView.swift; sourceTree = "<group>"; };
+		C141E8CADA075958DD594557 /* ConfettiView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfettiView.swift; sourceTree = "<group>"; };
+		C4B0EBB0FDE25526BAB85BCF /* EssayPad.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = EssayPad.entitlements; sourceTree = "<group>"; };
+		CBE062ACD71839471462A28C /* PomodoroSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PomodoroSetupView.swift; sourceTree = "<group>"; };
+		CC29738002B3777C35045D10 /* Endpoints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Endpoints.swift; sourceTree = "<group>"; };
+		CC4F88EF0641206C066C5F19 /* NoteListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteListView.swift; sourceTree = "<group>"; };
+		D432411D51F0D96E097AFC9B /* QuickCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickCaptureView.swift; sourceTree = "<group>"; };
+		E5787C32582BF2858D721021 /* NoteStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteStore.swift; sourceTree = "<group>"; };
+		EC261AD0BF07682BC108410B /* EssayPadTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = EssayPadTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F286D90D36F9E7783AA5DBEB /* PomodoroTimerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PomodoroTimerView.swift; sourceTree = "<group>"; };
+		F6948D020DF43C74893802AD /* TodoTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoTask.swift; sourceTree = "<group>"; };
+		F8266BB9273F7F8B9152BE57 /* FloatingPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingPanel.swift; sourceTree = "<group>"; };
+		FAE31F2194B7319C9481D36D /* Note.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Note.swift; sourceTree = "<group>"; };
+		FF4C9B071F762D3C6966A478 /* ShortcutsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsSheet.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		1FD736EE4FDC173B5927F825 /* Server */ = {
+			isa = PBXGroup;
+			children = (
+				010E3EAF2DE9C36568DE23A7 /* LocalServerManager.swift */,
+			);
+			path = Server;
+			sourceTree = "<group>";
+		};
+		2C1504FC2D62097C32064D20 /* EssayPad */ = {
+			isa = PBXGroup;
+			children = (
+				101EB1AF4C43D05FB86147D2 /* AppDelegate.swift */,
+				C4B0EBB0FDE25526BAB85BCF /* EssayPad.entitlements */,
+				812FF593C4ED1342F6882072 /* EssayPadApp.swift */,
+				3CC7B9EFD8E402F6F31FC77C /* Info.plist */,
+				C38E34488A7EF0543C71A5FC /* Hotkey */,
+				762B78D8F258FE77306D502C /* Markdown */,
+				57F6E4D80852BB8FEAFFBDE7 /* Models */,
+				7EE740E5794F4104DF370DBD /* Network */,
+				1FD736EE4FDC173B5927F825 /* Server */,
+				FA8C1B7C85085957120C8758 /* Store */,
+				9452908C1C037D3D4707ECA7 /* Utils */,
+				8571152F721D2B2A41FB7C95 /* Views */,
+			);
+			path = EssayPad;
+			sourceTree = "<group>";
+		};
+		57F6E4D80852BB8FEAFFBDE7 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				FAE31F2194B7319C9481D36D /* Note.swift */,
+				7FBF1C03ADDFD1A398300616 /* NoteCategory.swift */,
+				6C1F85941D42DDFC9FB77580 /* PomodoroSession.swift */,
+				F6948D020DF43C74893802AD /* TodoTask.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		762B78D8F258FE77306D502C /* Markdown */ = {
+			isa = PBXGroup;
+			children = (
+				717A225F39EDDF1C46B12D18 /* MarkdownParser.swift */,
+				6D04CF5D5DF8C8CD5D962782 /* MarkdownStyledEditor.swift */,
+			);
+			path = Markdown;
+			sourceTree = "<group>";
+		};
+		7EE740E5794F4104DF370DBD /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				0CB35417E5776EDAA6B33348 /* APIClient.swift */,
+				CC29738002B3777C35045D10 /* Endpoints.swift */,
+			);
+			path = Network;
+			sourceTree = "<group>";
+		};
+		8571152F721D2B2A41FB7C95 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				C141E8CADA075958DD594557 /* ConfettiView.swift */,
+				8B25011E1C7090BD5DE2F8BD /* ContentView.swift */,
+				F8266BB9273F7F8B9152BE57 /* FloatingPanel.swift */,
+				A05FC93BCADD138E49A2DF3D /* NoteEditorView.swift */,
+				CC4F88EF0641206C066C5F19 /* NoteListView.swift */,
+				4B04CBF5B67F3E2C28A7B02A /* PomodoroRestView.swift */,
+				CBE062ACD71839471462A28C /* PomodoroSetupView.swift */,
+				F286D90D36F9E7783AA5DBEB /* PomodoroTimerView.swift */,
+				51FDB3E39923CE8D358BB137 /* PomodoroWindowController.swift */,
+				D432411D51F0D96E097AFC9B /* QuickCaptureView.swift */,
+				FF4C9B071F762D3C6966A478 /* ShortcutsSheet.swift */,
+				2736A475257AC626C3AECB22 /* TaskDetailView.swift */,
+				7330CF506E6EE1A068C2B13D /* TaskRow.swift */,
+				A551B0B7029BF083527B432F /* TasksView.swift */,
+				276AF7CC9CB9C5ED91330E13 /* WeeklyReportView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		9452908C1C037D3D4707ECA7 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				4D91F0BE32F00E4C1FC5792C /* ClipboardHelper.swift */,
+				7589474D9C8A3D5C6BD421E5 /* ImagePasteHelper.swift */,
+				87CB667014ADD9D1DF3AB2A2 /* SoundPlayer.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		94EBC6F5B7617C125C6BDCC1 = {
+			isa = PBXGroup;
+			children = (
+				2C1504FC2D62097C32064D20 /* EssayPad */,
+				CD5E6C8DBB6D8BAC718CE666 /* EssayPadTests */,
+				E3C65DD89924991F33D226FA /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		C38E34488A7EF0543C71A5FC /* Hotkey */ = {
+			isa = PBXGroup;
+			children = (
+				5FC007BB1D74F116E517F464 /* GlobalHotkey.swift */,
+			);
+			path = Hotkey;
+			sourceTree = "<group>";
+		};
+		CD5E6C8DBB6D8BAC718CE666 /* EssayPadTests */ = {
+			isa = PBXGroup;
+			children = (
+				657AEBD26D8ED1D24D7E36F7 /* APIClientTests.swift */,
+				66BDAE90F30E9D38899E8CBD /* MarkdownParserTests.swift */,
+			);
+			path = EssayPadTests;
+			sourceTree = "<group>";
+		};
+		E3C65DD89924991F33D226FA /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				3484746570512782B2494E03 /* EssayPad.app */,
+				EC261AD0BF07682BC108410B /* EssayPadTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		FA8C1B7C85085957120C8758 /* Store */ = {
+			isa = PBXGroup;
+			children = (
+				E5787C32582BF2858D721021 /* NoteStore.swift */,
+			);
+			path = Store;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		9D6681B509A5F36EC4CDCCEE /* EssayPadTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 42746237A636B98A6AA592B3 /* Build configuration list for PBXNativeTarget "EssayPadTests" */;
+			buildPhases = (
+				A9B1D7323C5BC89C81211D0C /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A37E7EE553B8115A09E4476E /* PBXTargetDependency */,
+			);
+			name = EssayPadTests;
+			packageProductDependencies = (
+			);
+			productName = EssayPadTests;
+			productReference = EC261AD0BF07682BC108410B /* EssayPadTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		E255ABFD9F65E3E770B0CBCD /* EssayPad */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D4E48BE576841F09015CE569 /* Build configuration list for PBXNativeTarget "EssayPad" */;
+			buildPhases = (
+				866A002EC6C2A6543494451C /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = EssayPad;
+			packageProductDependencies = (
+			);
+			productName = EssayPad;
+			productReference = 3484746570512782B2494E03 /* EssayPad.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A5FAC7F493F23F8295DCC642 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					9D6681B509A5F36EC4CDCCEE = {
+						ProvisioningStyle = Automatic;
+					};
+					E255ABFD9F65E3E770B0CBCD = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = A82DDCD74DA11FB396DCB55F /* Build configuration list for PBXProject "EssayPad" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 94EBC6F5B7617C125C6BDCC1;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = E3C65DD89924991F33D226FA /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E255ABFD9F65E3E770B0CBCD /* EssayPad */,
+				9D6681B509A5F36EC4CDCCEE /* EssayPadTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		866A002EC6C2A6543494451C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				632328CD368BCABCD7454743 /* APIClient.swift in Sources */,
+				69D763DA85A65AF396B11E36 /* AppDelegate.swift in Sources */,
+				24DEBF82C1C805DDF3D74BB8 /* ClipboardHelper.swift in Sources */,
+				2198DE1C5DF7FE80758DE474 /* ConfettiView.swift in Sources */,
+				A4F2A55F984D508B2A3D8B3F /* ContentView.swift in Sources */,
+				125CEE5131441172F6EA8023 /* Endpoints.swift in Sources */,
+				492EDF83DEBF8281754D8D48 /* EssayPadApp.swift in Sources */,
+				C811F4D72D55276AC801C02D /* FloatingPanel.swift in Sources */,
+				80BAEE3F874508857871E381 /* GlobalHotkey.swift in Sources */,
+				AFFB257C1C4A5A3EB5C1F965 /* ImagePasteHelper.swift in Sources */,
+				8B9A0BF16FCA560CDA55C1D8 /* LocalServerManager.swift in Sources */,
+				1B6288C9A9FE02B2B90D7E4B /* MarkdownParser.swift in Sources */,
+				108F70D65FAE49116D14DC6B /* MarkdownStyledEditor.swift in Sources */,
+				5F59F0ACCC8A177691EBDC28 /* Note.swift in Sources */,
+				467A86065715A4DE32F92DF6 /* NoteCategory.swift in Sources */,
+				702F74988D5CD7DF92A6D20A /* NoteEditorView.swift in Sources */,
+				D0638F659648B769DAF5F8A4 /* NoteListView.swift in Sources */,
+				2C17796EEAC80401CE5B96B6 /* NoteStore.swift in Sources */,
+				10B4EA2A33CED492A72B3DA7 /* PomodoroRestView.swift in Sources */,
+				9C5723A9E2DDAF6B06B31569 /* PomodoroSession.swift in Sources */,
+				07F1CEE0DD43C44F783CE188 /* PomodoroSetupView.swift in Sources */,
+				C167A8AA3D237512F20905BC /* PomodoroTimerView.swift in Sources */,
+				6879CA48DC1984BEEFA064AD /* PomodoroWindowController.swift in Sources */,
+				18BE3F07FD19A2DC8E161CA5 /* QuickCaptureView.swift in Sources */,
+				097A7C4AB430CE3F8E90A1F3 /* ShortcutsSheet.swift in Sources */,
+				FA70F1A4C8FEC7A8249269A5 /* SoundPlayer.swift in Sources */,
+				7B57BB5E6FD5673FEA44B635 /* TaskDetailView.swift in Sources */,
+				FA34BA554B2DE77E4C15D82F /* TaskRow.swift in Sources */,
+				3D34CEF7D08D50E6C1692933 /* TasksView.swift in Sources */,
+				8F855F44E1E57E22E9B5E64F /* TodoTask.swift in Sources */,
+				26D942146AD7037AE9FB5464 /* WeeklyReportView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A9B1D7323C5BC89C81211D0C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3B96804C9ABD13F0CB570826 /* APIClientTests.swift in Sources */,
+				5ACAB76A643C134C3471DBFA /* MarkdownParserTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A37E7EE553B8115A09E4476E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E255ABFD9F65E3E770B0CBCD /* EssayPad */;
+			targetProxy = 83A0FEDD3C3FE904BA4038B0 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		5DE4917B32AC403947AD8E9E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = EssayPad/EssayPad.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = EssayPad/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.essaypad.EssayPad;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		5E598EAFA2EA79AFD4C5A618 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.essaypad.EssayPadTests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/EssayPad.app/Contents/MacOS/EssayPad";
+			};
+			name = Debug;
+		};
+		6DCE966408EBAE968145B8EC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = EssayPad/EssayPad.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = EssayPad/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.essaypad.EssayPad;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		766E2CF38577E79CB028CDC5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.essaypad.EssayPadTests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/EssayPad.app/Contents/MacOS/EssayPad";
+			};
+			name = Release;
+		};
+		B73841CBD72F9CD8885F064C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = EssayPad/EssayPad.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+		D75A09C40C12CBECB88078B1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = EssayPad/EssayPad.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		42746237A636B98A6AA592B3 /* Build configuration list for PBXNativeTarget "EssayPadTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5E598EAFA2EA79AFD4C5A618 /* Debug */,
+				766E2CF38577E79CB028CDC5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		A82DDCD74DA11FB396DCB55F /* Build configuration list for PBXProject "EssayPad" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D75A09C40C12CBECB88078B1 /* Debug */,
+				B73841CBD72F9CD8885F064C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		D4E48BE576841F09015CE569 /* Build configuration list for PBXNativeTarget "EssayPad" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5DE4917B32AC403947AD8E9E /* Debug */,
+				6DCE966408EBAE968145B8EC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A5FAC7F493F23F8295DCC642 /* Project object */;
+}

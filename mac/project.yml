@@ -1,0 +1,44 @@
+name: EssayPad
+options:
+  bundleIdPrefix: com.essaypad
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    ENABLE_HARDENED_RUNTIME: YES
+    CODE_SIGN_STYLE: Automatic
+    CODE_SIGN_ENTITLEMENTS: EssayPad/EssayPad.entitlements
+
+targets:
+  EssayPad:
+    type: application
+    platform: macOS
+    sources:
+      - path: EssayPad
+    info:
+      path: EssayPad/Info.plist
+      properties:
+        CFBundleName: EssayPad
+        CFBundleDisplayName: EssayPad
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+        LSMinimumSystemVersion: "14.0"
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: YES
+    entitlements:
+      path: EssayPad/EssayPad.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+        com.apple.security.network.client: true
+        com.apple.security.files.user-selected.read-write: true
+  EssayPadTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: EssayPadTests
+    dependencies:
+      - target: EssayPad
