@@ -6,11 +6,17 @@ enum APIConfig {
 
 enum Endpoints {
     static let notes = APIConfig.baseURL.appendingPathComponent("/api/v1/notes")
+    static let diaries = APIConfig.baseURL.appendingPathComponent("/api/v1/diaries")
+    static let diaryByDate = APIConfig.baseURL.appendingPathComponent("/api/v1/diaries/by-date")
     static let weeklyGenerate = APIConfig.baseURL.appendingPathComponent("/api/v1/weekly/generate")
     static let tasks = APIConfig.baseURL.appendingPathComponent("/api/v1/tasks")
 
     static func noteDetail(id: Int64) -> URL {
         APIConfig.baseURL.appendingPathComponent("/api/v1/notes/\(id)")
+    }
+
+    static func diaryDetail(id: Int64) -> URL {
+        APIConfig.baseURL.appendingPathComponent("/api/v1/diaries/\(id)")
     }
 
     static func taskDetail(id: Int64) -> URL {

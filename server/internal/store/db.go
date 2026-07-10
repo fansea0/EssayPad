@@ -65,6 +65,23 @@ CREATE TABLE IF NOT EXISTS pomodoro_sessions (
 );
 CREATE INDEX IF NOT EXISTS idx_pomodoro_task_ended ON pomodoro_sessions(task_id, ended_at DESC);
 CREATE INDEX IF NOT EXISTS idx_pomodoro_ended ON pomodoro_sessions(ended_at DESC);
+
+CREATE TABLE IF NOT EXISTS diary_entries (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id BIGINT NOT NULL DEFAULT 0,
+    diary_date BIGINT NOT NULL DEFAULT 0,
+    title VARCHAR(200) NOT NULL DEFAULT '',
+    content TEXT NOT NULL DEFAULT '',
+    mood TINYINT NOT NULL DEFAULT 0,
+    status TINYINT NOT NULL DEFAULT 0,
+    activity TINYINT NOT NULL DEFAULT 0,
+    created_at BIGINT NOT NULL DEFAULT 0,
+    updated_at BIGINT NOT NULL DEFAULT 0,
+    is_deleted TINYINT NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX IF NOT EXISTS uniq_diary_user_date ON diary_entries(user_id, diary_date);
+CREATE INDEX IF NOT EXISTS idx_diary_user_date_deleted ON diary_entries(user_id, diary_date DESC, is_deleted);
+CREATE INDEX IF NOT EXISTS idx_diary_user_updated ON diary_entries(user_id, updated_at DESC);
 `
 
 func OpenDB(path string) (*sql.DB, error) {
