@@ -53,7 +53,6 @@ struct TasksView: View {
                         if selectedGroup != g && !loading {
                             NSLog("[ES] TasksView tab button tapped new=\(g.rawValue) old=\(selectedGroup.rawValue)")
                             selectedGroup = g
-                            onLoad()
                         }
                     } label: {
                         Text(g.name)

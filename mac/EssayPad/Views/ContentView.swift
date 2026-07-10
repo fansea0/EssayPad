@@ -16,6 +16,7 @@ struct ContentView: View {
     @State private var tasks: [TodoTask] = []
     @State private var taskGroup: TaskGroup = .today
     @State private var tasksLoading = false
+    @State private var taskLoadGeneration = 0
     @State private var detailTask: TodoTask?
     @State private var confettiAnchor: CGPoint?
     @State private var tasksError: String?
@@ -105,19 +106,11 @@ struct ContentView: View {
         }
         .onChange(of: mainMode) { _, new in
             NSLog("[ES] ContentView mainMode=\(mainModeName(new))")
-            if new == .tasks {
-                Task { await loadTasks() }
-            } else if new == .diary {
+            if new == .diary {
                 Task {
                     await diaryStore.load()
                     await diaryStore.openToday()
                 }
-            }
-        }
-        .onChange(of: taskGroup) { _, new in
-            NSLog("[ES] ContentView taskGroup changed to \(new.rawValue), reloading")
-            if mainMode == .tasks {
-                Task { await loadTasks() }
             }
         }
         .onChange(of: store.notesByCategory) { _, _ in
@@ -183,7 +176,7 @@ struct ContentView: View {
             detailTask: $detailTask,
             confettiAnchor: $confettiAnchor,
             error: $tasksError,
-            onLoad: { Task { await loadTasks() } },
+            onLoad: { Task { await loadTasks(for: taskGroup) } },
             onNavigateToNote: { noteId in
                 detailTask = nil
                 mainMode = .notes
@@ -193,6 +186,9 @@ struct ContentView: View {
                 pomodoroSetupTask = task
             }
         )
+        .task(id: taskGroup) {
+            await loadTasks(for: taskGroup)
+        }
     }
 
     private var diaryContainer: some View {
@@ -200,21 +196,45 @@ struct ContentView: View {
             .id("diary-\(diaryStore.selectedEntry?.id ?? 0)-\(diaryStore.selectedDate)")
     }
 
-    private func loadTasks() async {
-        NSLog("[ES] loadTasks START taskGroup=\(taskGroup.rawValue) tasks.count=\(tasks.count)")
+    private func loadTasks(for group: TaskGroup) async {
+        taskLoadGeneration += 1
+        let generation = taskLoadGeneration
+        NSLog("[ES] loadTasks START group=\(group.rawValue) generation=\(generation) tasks.count=\(tasks.count)")
         tasksLoading = true
         defer {
-            tasksLoading = false
-            NSLog("[ES] loadTasks END taskGroup=\(taskGroup.rawValue) tasks.count=\(tasks.count) loading=\(tasksLoading)")
+            if taskLoadGeneration == generation {
+                tasksLoading = false
+                NSLog("[ES] loadTasks END group=\(group.rawValue) generation=\(generation) tasks.count=\(tasks.count)")
+            }
         }
         do {
-            let result = try await APIClient.shared.listTasks(group: taskGroup)
+            let result = try await APIClient.shared.listTasks(group: group)
+            // A cancelled or outdated request must not replace the visible task list.
+            guard !Task.isCancelled,
+                  taskLoadGeneration == generation,
+                  TaskLoadPolicy.shouldApply(
+                      requestedGroup: group,
+                      selectedGroup: taskGroup,
+                      isTasksMode: mainMode == .tasks
+                  ) else {
+                return
+            }
             let titles = result.map { "id=\($0.id) title='\($0.title)' priority=\($0.priority) status=\($0.status)" }.joined(separator: " | ")
             NSLog("[ES] loadTasks GOT \(result.count) tasks: [\(titles)]")
             tasks = result
             tasksError = nil
+        } catch is CancellationError {
+            return
         } catch {
-            NSLog("[ES] loadTasks FAIL: \(error)")
+            guard taskLoadGeneration == generation,
+                  TaskLoadPolicy.shouldApply(
+                      requestedGroup: group,
+                      selectedGroup: taskGroup,
+                      isTasksMode: mainMode == .tasks
+                  ) else {
+                return
+            }
+            NSLog("[ES] loadTasks FAIL group=\(group.rawValue): \(error)")
             tasksError = (error as? APIError)?.errorDescription ?? error.localizedDescription
         }
     }

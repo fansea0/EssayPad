@@ -86,4 +86,22 @@ final class APIClientTests: XCTestCase {
         XCTAssertEqual(group, "long_term")
         XCTAssertEqual(TaskGroup.longTerm.name, "长期")
     }
+
+    func testTaskLoadOnlyAppliesToVisibleSelectedGroup() {
+        XCTAssertTrue(TaskLoadPolicy.shouldApply(
+            requestedGroup: .today,
+            selectedGroup: .today,
+            isTasksMode: true
+        ))
+        XCTAssertFalse(TaskLoadPolicy.shouldApply(
+            requestedGroup: .today,
+            selectedGroup: .week,
+            isTasksMode: true
+        ))
+        XCTAssertFalse(TaskLoadPolicy.shouldApply(
+            requestedGroup: .today,
+            selectedGroup: .today,
+            isTasksMode: false
+        ))
+    }
 }

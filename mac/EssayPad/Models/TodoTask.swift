@@ -91,3 +91,9 @@ enum TaskPriority: Int {
     case important = 1
     case urgent = 2
 }
+
+enum TaskLoadPolicy {
+    static func shouldApply(requestedGroup: TaskGroup, selectedGroup: TaskGroup, isTasksMode: Bool) -> Bool {
+        isTasksMode && requestedGroup == selectedGroup
+    }
+}
