@@ -1,8 +1,10 @@
 # Go
 server/data/*.db
 server/data/*.db-journal
+server/data/
 server/bin/
 server/.env
+.idea/*
 
 # macOS
 mac/build/
