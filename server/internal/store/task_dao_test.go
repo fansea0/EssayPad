@@ -105,6 +105,47 @@ func TestTaskListByGroup(t *testing.T) {
 	}
 }
 
+func TestTaskListByLongTermGroup(t *testing.T) {
+	dao, cleanup := newTaskTestDAO(t)
+	defer cleanup()
+
+	now := time.Now().Unix()
+	longTermID, err := dao.Create(&model.Task{
+		Title:     "整理家庭档案",
+		Priority:  model.TaskPriorityImportant,
+		DueAt:     todayStartUnix(),
+		CreatedAt: now,
+		UpdatedAt: now,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := dao.Create(&model.Task{
+		Title:     "今天回复邮件",
+		Priority:  model.TaskPriorityNormal,
+		DueAt:     todayStartUnix(),
+		CreatedAt: now,
+		UpdatedAt: now,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	longTerm, err := dao.ListByGroup("long_term")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(longTerm) != 1 || longTerm[0].ID != longTermID {
+		t.Fatalf("expected only long-term task %d, got %+v", longTermID, longTerm)
+	}
+
+	all, err := dao.ListByGroup("all")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(all) != 2 {
+		t.Fatalf("all group should retain all tasks, got %+v", all)
+	}
+}
+
 func TestTaskSoftDelete(t *testing.T) {
 	dao, cleanup := newTaskTestDAO(t)
 	defer cleanup()

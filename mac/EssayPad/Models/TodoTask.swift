@@ -73,7 +73,7 @@ struct TodoTask: Codable, Identifiable, Equatable {
 }
 
 enum TaskGroup: String, CaseIterable, Identifiable {
-    case today, yesterday, week, all
+    case today, yesterday, week, all, longTerm = "long_term"
     var id: String { rawValue }
     var name: String {
         switch self {
@@ -81,6 +81,7 @@ enum TaskGroup: String, CaseIterable, Identifiable {
         case .yesterday: return "昨天"
         case .week: return "本周"
         case .all: return "全部"
+        case .longTerm: return "长期"
         }
     }
 }

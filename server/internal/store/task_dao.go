@@ -130,6 +130,9 @@ func (d *TaskDAO) ListByGroup(group string) ([]*model.Task, error) {
 		mondayStart := todayStart - int64(daysFromMonday)*86400
 		query = `SELECT ` + taskColumns + ` FROM tasks WHERE is_deleted=0 AND due_at>=? ORDER BY due_at DESC, priority DESC, id ASC`
 		args = []interface{}{mondayStart}
+	case "long_term":
+		query = `SELECT ` + taskColumns + ` FROM tasks WHERE is_deleted=0 AND priority=? AND status=? ORDER BY updated_at DESC, id ASC`
+		args = []interface{}{model.TaskPriorityImportant, model.TaskStatusActive}
 	default: // all
 		query = `SELECT ` + taskColumns + ` FROM tasks WHERE is_deleted=0 ORDER BY due_at DESC, priority DESC, id ASC`
 	}

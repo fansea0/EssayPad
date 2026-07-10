@@ -47,7 +47,9 @@ final class APIClientTests: XCTestCase {
         """.data(using: .utf8)!
         var requestedURL: URL?
         Mock.handler = { request in
-            requestedURL = request.url
+            if request.url?.path == "/api/v1/diaries" {
+                requestedURL = request.url
+            }
             return (HTTPURLResponse(url: URL(string: "http://x")!, statusCode: 200, httpVersion: nil, headerFields: nil)!, json)
         }
         let config = URLSessionConfiguration.ephemeral
@@ -58,7 +60,30 @@ final class APIClientTests: XCTestCase {
         XCTAssertEqual(total, 1)
         XCTAssertEqual(list.first?.id, 7)
         XCTAssertEqual(list.first?.moodName, "平静")
-        XCTAssertTrue(requestedURL?.absoluteString.contains("/api/v1/diaries") ?? false)
-        XCTAssertTrue(requestedURL?.absoluteString.contains("mode=week") ?? false)
+        let components = requestedURL.flatMap { URLComponents(url: $0, resolvingAgainstBaseURL: false) }
+        XCTAssertEqual(components?.path, "/api/v1/diaries")
+        XCTAssertEqual(components?.queryItems?.first(where: { $0.name == "mode" })?.value, "week")
+    }
+
+    func testListLongTermTasksUsesLongTermGroup() async throws {
+        let json = """
+        {"code":0,"msg":"ok","data":{"total":0,"list":[]}}
+        """.data(using: .utf8)!
+        var requestedURL: URL?
+        Mock.handler = { request in
+            if request.url?.path == "/api/v1/tasks" {
+                requestedURL = request.url
+            }
+            return (HTTPURLResponse(url: URL(string: "http://x")!, statusCode: 200, httpVersion: nil, headerFields: nil)!, json)
+        }
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [Mock.self]
+        let client = APIClient(session: URLSession(configuration: config))
+
+        _ = try await client.listTasks(group: .longTerm)
+
+        let group = requestedURL.flatMap { URLComponents(url: $0, resolvingAgainstBaseURL: false)?.queryItems?.first(where: { $0.name == "group" })?.value }
+        XCTAssertEqual(group, "long_term")
+        XCTAssertEqual(TaskGroup.longTerm.name, "长期")
     }
 }

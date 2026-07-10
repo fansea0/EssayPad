@@ -24,6 +24,7 @@
 		467A86065715A4DE32F92DF6 /* NoteCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FBF1C03ADDFD1A398300616 /* NoteCategory.swift */; };
 		492EDF83DEBF8281754D8D48 /* EssayPadApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 812FF593C4ED1342F6882072 /* EssayPadApp.swift */; };
 		5ACAB76A643C134C3471DBFA /* MarkdownParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66BDAE90F30E9D38899E8CBD /* MarkdownParserTests.swift */; };
+		5D058E25FAD28E660843D108 /* DiaryEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FC9FCA1F1C79BA8C54B8DC2 /* DiaryEntry.swift */; };
 		5F59F0ACCC8A177691EBDC28 /* Note.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAE31F2194B7319C9481D36D /* Note.swift */; };
 		632328CD368BCABCD7454743 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CB35417E5776EDAA6B33348 /* APIClient.swift */; };
 		6879CA48DC1984BEEFA064AD /* PomodoroWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51FDB3E39923CE8D358BB137 /* PomodoroWindowController.swift */; };
@@ -34,14 +35,17 @@
 		80BAEE3F874508857871E381 /* GlobalHotkey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FC007BB1D74F116E517F464 /* GlobalHotkey.swift */; };
 		8B9A0BF16FCA560CDA55C1D8 /* LocalServerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010E3EAF2DE9C36568DE23A7 /* LocalServerManager.swift */; };
 		8F855F44E1E57E22E9B5E64F /* TodoTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6948D020DF43C74893802AD /* TodoTask.swift */; };
+		962E6CB4104D6AA66EF8C6D9 /* DiaryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2022817F379E98E7AD3DFE16 /* DiaryStore.swift */; };
 		9757A2CA2165DE82CD436B25 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9718654A6A515FFE329D8995 /* SettingsView.swift */; };
 		9C5723A9E2DDAF6B06B31569 /* PomodoroSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1F85941D42DDFC9FB77580 /* PomodoroSession.swift */; };
 		9EAC663EACF30BBA836BD00C /* AppIconRuntime.png in Resources */ = {isa = PBXBuildFile; fileRef = 20ECDAEDF921249EC22B659F /* AppIconRuntime.png */; };
+		9F889D4F3BE55F61BB7E6FFF /* DiaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F00D22B2E4A4F28F25D66E4 /* DiaryView.swift */; };
 		A4F2A55F984D508B2A3D8B3F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B25011E1C7090BD5DE2F8BD /* ContentView.swift */; };
 		AFFB257C1C4A5A3EB5C1F965 /* ImagePasteHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7589474D9C8A3D5C6BD421E5 /* ImagePasteHelper.swift */; };
 		C167A8AA3D237512F20905BC /* PomodoroTimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F286D90D36F9E7783AA5DBEB /* PomodoroTimerView.swift */; };
 		C5C6F65F266D6ED6E732461D /* MarkdownNoteImporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56AEBA6691C9A906282E0EB2 /* MarkdownNoteImporterTests.swift */; };
 		C811F4D72D55276AC801C02D /* FloatingPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8266BB9273F7F8B9152BE57 /* FloatingPanel.swift */; };
+		D1A9F001D1A9F001D1A9F001 /* DiaryMarkdownStyledEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1A9F002D1A9F002D1A9F002 /* DiaryMarkdownStyledEditor.swift */; };
 		C92E4CF6546644DD387929FE /* TaskPickerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07F5735FF1067EA0668D3E7B /* TaskPickerSheet.swift */; };
 		D0638F659648B769DAF5F8A4 /* NoteListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4F88EF0641206C066C5F19 /* NoteListView.swift */; };
 		FA34BA554B2DE77E4C15D82F /* TaskRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7330CF506E6EE1A068C2B13D /* TaskRow.swift */; };
@@ -63,6 +67,8 @@
 		07F5735FF1067EA0668D3E7B /* TaskPickerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskPickerSheet.swift; sourceTree = "<group>"; };
 		0CB35417E5776EDAA6B33348 /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
 		101EB1AF4C43D05FB86147D2 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		1F00D22B2E4A4F28F25D66E4 /* DiaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiaryView.swift; sourceTree = "<group>"; };
+		2022817F379E98E7AD3DFE16 /* DiaryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiaryStore.swift; sourceTree = "<group>"; };
 		20ECDAEDF921249EC22B659F /* AppIconRuntime.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = AppIconRuntime.png; sourceTree = "<group>"; };
 		2736A475257AC626C3AECB22 /* TaskDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDetailView.swift; sourceTree = "<group>"; };
 		276AF7CC9CB9C5ED91330E13 /* WeeklyReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyReportView.swift; sourceTree = "<group>"; };
@@ -84,6 +90,7 @@
 		812FF593C4ED1342F6882072 /* EssayPadApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EssayPadApp.swift; sourceTree = "<group>"; };
 		820A6B3BA222330F51236D80 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		87CB667014ADD9D1DF3AB2A2 /* SoundPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundPlayer.swift; sourceTree = "<group>"; };
+		8FC9FCA1F1C79BA8C54B8DC2 /* DiaryEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiaryEntry.swift; sourceTree = "<group>"; };
 		8B25011E1C7090BD5DE2F8BD /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		9718654A6A515FFE329D8995 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		A05FC93BCADD138E49A2DF3D /* NoteEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteEditorView.swift; sourceTree = "<group>"; };
@@ -94,6 +101,7 @@
 		CBE062ACD71839471462A28C /* PomodoroSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PomodoroSetupView.swift; sourceTree = "<group>"; };
 		CC29738002B3777C35045D10 /* Endpoints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Endpoints.swift; sourceTree = "<group>"; };
 		CC4F88EF0641206C066C5F19 /* NoteListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteListView.swift; sourceTree = "<group>"; };
+		D1A9F002D1A9F002D1A9F002 /* DiaryMarkdownStyledEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiaryMarkdownStyledEditor.swift; sourceTree = "<group>"; };
 		D432411D51F0D96E097AFC9B /* QuickCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickCaptureView.swift; sourceTree = "<group>"; };
 		E5787C32582BF2858D721021 /* NoteStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteStore.swift; sourceTree = "<group>"; };
 		EC261AD0BF07682BC108410B /* EssayPadTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = EssayPadTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -137,6 +145,7 @@
 		57F6E4D80852BB8FEAFFBDE7 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				8FC9FCA1F1C79BA8C54B8DC2 /* DiaryEntry.swift */,
 				FAE31F2194B7319C9481D36D /* Note.swift */,
 				7FBF1C03ADDFD1A398300616 /* NoteCategory.swift */,
 				6C1F85941D42DDFC9FB77580 /* PomodoroSession.swift */,
@@ -148,6 +157,7 @@
 		762B78D8F258FE77306D502C /* Markdown */ = {
 			isa = PBXGroup;
 			children = (
+				D1A9F002D1A9F002D1A9F002 /* DiaryMarkdownStyledEditor.swift */,
 				717A225F39EDDF1C46B12D18 /* MarkdownParser.swift */,
 				6D04CF5D5DF8C8CD5D962782 /* MarkdownStyledEditor.swift */,
 			);
@@ -168,6 +178,7 @@
 			children = (
 				C141E8CADA075958DD594557 /* ConfettiView.swift */,
 				8B25011E1C7090BD5DE2F8BD /* ContentView.swift */,
+				1F00D22B2E4A4F28F25D66E4 /* DiaryView.swift */,
 				F8266BB9273F7F8B9152BE57 /* FloatingPanel.swift */,
 				A05FC93BCADD138E49A2DF3D /* NoteEditorView.swift */,
 				CC4F88EF0641206C066C5F19 /* NoteListView.swift */,
@@ -237,6 +248,7 @@
 		FA8C1B7C85085957120C8758 /* Store */ = {
 			isa = PBXGroup;
 			children = (
+				2022817F379E98E7AD3DFE16 /* DiaryStore.swift */,
 				E5787C32582BF2858D721021 /* NoteStore.swift */,
 			);
 			path = Store;
@@ -340,6 +352,9 @@
 				24DEBF82C1C805DDF3D74BB8 /* ClipboardHelper.swift in Sources */,
 				2198DE1C5DF7FE80758DE474 /* ConfettiView.swift in Sources */,
 				A4F2A55F984D508B2A3D8B3F /* ContentView.swift in Sources */,
+				5D058E25FAD28E660843D108 /* DiaryEntry.swift in Sources */,
+				962E6CB4104D6AA66EF8C6D9 /* DiaryStore.swift in Sources */,
+				9F889D4F3BE55F61BB7E6FFF /* DiaryView.swift in Sources */,
 				125CEE5131441172F6EA8023 /* Endpoints.swift in Sources */,
 				492EDF83DEBF8281754D8D48 /* EssayPadApp.swift in Sources */,
 				C811F4D72D55276AC801C02D /* FloatingPanel.swift in Sources */,
@@ -349,6 +364,7 @@
 				2F610A969012B30108FFCFEC /* MarkdownNoteImporter.swift in Sources */,
 				1B6288C9A9FE02B2B90D7E4B /* MarkdownParser.swift in Sources */,
 				108F70D65FAE49116D14DC6B /* MarkdownStyledEditor.swift in Sources */,
+				D1A9F001D1A9F001D1A9F001 /* DiaryMarkdownStyledEditor.swift in Sources */,
 				5F59F0ACCC8A177691EBDC28 /* Note.swift in Sources */,
 				467A86065715A4DE32F92DF6 /* NoteCategory.swift in Sources */,
 				702F74988D5CD7DF92A6D20A /* NoteEditorView.swift in Sources */,

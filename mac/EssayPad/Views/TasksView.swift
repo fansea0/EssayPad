@@ -32,7 +32,7 @@ struct TasksView: View {
                     .foregroundStyle(.secondary)
                 Spacer()
                 Button {
-                    showNewTaskSheet = true
+                    presentNewTaskSheet()
                 } label: {
                     Image(systemName: "plus")
                         .font(.system(size: 12, weight: .semibold))
@@ -98,7 +98,7 @@ struct TasksView: View {
                                 .foregroundStyle(.tertiary)
                             Text("暂无任务")
                                 .foregroundStyle(.secondary)
-                            Button("新建第一个任务") { showNewTaskSheet = true }
+                            Button("新建第一个任务") { presentNewTaskSheet() }
                                 .buttonStyle(.borderless)
                         }
                         .frame(maxWidth: .infinity, minHeight: 200)
@@ -193,6 +193,12 @@ struct TasksView: View {
                 self.error = (error as? APIError)?.errorDescription ?? error.localizedDescription
             }
         }
+    }
+
+    private func presentNewTaskSheet() {
+        newTaskTitle = ""
+        newTaskPriority = selectedGroup == .longTerm ? TaskPriority.important.rawValue : TaskPriority.normal.rawValue
+        showNewTaskSheet = true
     }
 
     private func updateProgress(_ id: Int64, to p: Int) async {
