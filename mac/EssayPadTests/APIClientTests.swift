@@ -104,4 +104,14 @@ final class APIClientTests: XCTestCase {
             isTasksMode: false
         ))
     }
+
+    func testTodoTaskDecodesTodayPomodoroMinutes() throws {
+        let json = """
+        {"id":1,"title":"整理需求","description":"","progress":0,"priority":1,"status":0,"due_at":0,"created_at":1,"updated_at":1,"completed_at":0,"note_count":0,"pomodoro_count":3,"pomodoro_minutes":75,"pomodoro_today_minutes":50}
+        """.data(using: .utf8)!
+
+        let task = try JSONDecoder().decode(TodoTask.self, from: json)
+
+        XCTAssertEqual(task.pomodoroTodayMinutes, 50)
+    }
 }

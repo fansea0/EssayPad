@@ -14,6 +14,7 @@ struct TodoTask: Codable, Identifiable, Equatable {
     var noteCount: Int
     var pomodoroCount: Int
     var pomodoroMinutes: Int
+    var pomodoroTodayMinutes: Int
 
     enum CodingKeys: String, CodingKey {
         case id, title, description, progress, priority, status
@@ -24,12 +25,14 @@ struct TodoTask: Codable, Identifiable, Equatable {
         case noteCount = "note_count"
         case pomodoroCount = "pomodoro_count"
         case pomodoroMinutes = "pomodoro_minutes"
+        case pomodoroTodayMinutes = "pomodoro_today_minutes"
     }
 
     init(id: Int64, title: String, description: String, progress: Int,
          priority: Int, status: Int, dueAt: Int64, createdAt: Int64,
          updatedAt: Int64, completedAt: Int64, noteCount: Int = 0,
-         pomodoroCount: Int = 0, pomodoroMinutes: Int = 0) {
+         pomodoroCount: Int = 0, pomodoroMinutes: Int = 0,
+         pomodoroTodayMinutes: Int = 0) {
         self.id = id
         self.title = title
         self.description = description
@@ -43,6 +46,7 @@ struct TodoTask: Codable, Identifiable, Equatable {
         self.noteCount = noteCount
         self.pomodoroCount = pomodoroCount
         self.pomodoroMinutes = pomodoroMinutes
+        self.pomodoroTodayMinutes = pomodoroTodayMinutes
     }
 
     init(from decoder: Decoder) throws {
@@ -60,6 +64,7 @@ struct TodoTask: Codable, Identifiable, Equatable {
         self.noteCount = (try? c.decode(Int.self, forKey: .noteCount)) ?? 0
         self.pomodoroCount = (try? c.decode(Int.self, forKey: .pomodoroCount)) ?? 0
         self.pomodoroMinutes = (try? c.decode(Int.self, forKey: .pomodoroMinutes)) ?? 0
+        self.pomodoroTodayMinutes = (try? c.decode(Int.self, forKey: .pomodoroTodayMinutes)) ?? 0
     }
 
     var isDone: Bool { status == 1 }

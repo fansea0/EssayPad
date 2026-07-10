@@ -14,6 +14,7 @@ struct ContentView: View {
     @State private var diaryStore = DiaryStore()
 
     @State private var tasks: [TodoTask] = []
+    @State private var todayTaskSummary: [TodoTask] = []
     @State private var taskGroup: TaskGroup = .today
     @State private var tasksLoading = false
     @State private var taskLoadGeneration = 0
@@ -38,6 +39,9 @@ struct ContentView: View {
                 if mainMode == .notes {
                     NoteListView(selection: $selection, showEditor: $showEditor,
                                  searchText: $searchText, tasks: tasks)
+                } else if mainMode == .tasks {
+                    TaskSidebarView(tasks: taskGroup == .today ? tasks : todayTaskSummary,
+                                    isLoading: taskGroup == .today && tasksLoading)
                 } else if mainMode == .diary {
                     DiarySidebarView(store: diaryStore)
                 }
@@ -222,6 +226,9 @@ struct ContentView: View {
             let titles = result.map { "id=\($0.id) title='\($0.title)' priority=\($0.priority) status=\($0.status)" }.joined(separator: " | ")
             NSLog("[ES] loadTasks GOT \(result.count) tasks: [\(titles)]")
             tasks = result
+            if group == .today {
+                todayTaskSummary = result
+            }
             tasksError = nil
         } catch is CancellationError {
             return
@@ -309,6 +316,66 @@ private struct HeaderBar: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+private struct TaskSidebarView: View {
+    let tasks: [TodoTask]
+    let isLoading: Bool
+
+    private var completedCount: Int { tasks.filter(\.isDone).count }
+    private var activeTasks: [TodoTask] { tasks.filter { $0.status == 0 } }
+    private var focusMinutes: Int { tasks.reduce(0) { $0 + $1.pomodoroTodayMinutes } }
+    private var urgentCount: Int { activeTasks.filter { $0.priority == TaskPriority.urgent.rawValue }.count }
+    private var importantCount: Int { activeTasks.filter { $0.priority == TaskPriority.important.rawValue }.count }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            sidebarTitle("任务", icon: "checklist")
+
+            if isLoading && tasks.isEmpty {
+                ProgressView()
+                    .controlSize(.small)
+                    .padding(.vertical, 12)
+            } else {
+                summaryRow("今天", value: "\(completedCount) / \(tasks.count) 完成", icon: "checkmark.circle")
+                summaryRow("专注", value: "\(focusMinutes) 分钟", icon: "timer")
+            }
+
+            Divider().padding(.vertical, 14)
+
+            sidebarTitle("优先级", icon: "flag")
+            summaryRow("紧急", value: "\(urgentCount)", icon: "exclamationmark.triangle", tint: .red)
+            summaryRow("重要", value: "\(importantCount)", icon: "flag.fill", tint: .orange)
+
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 8)
+    }
+
+    private func sidebarTitle(_ title: String, icon: String) -> some View {
+        Label(title, systemImage: icon)
+            .font(.system(size: 13, weight: .semibold))
+            .foregroundStyle(.primary)
+            .padding(.bottom, 8)
+    }
+
+    private func summaryRow(_ title: String, value: String, icon: String, tint: Color = .secondary) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(tint)
+                .frame(width: 16)
+            Text(title)
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
+            Spacer()
+            Text(value)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(.primary)
+        }
+        .frame(minHeight: 28)
     }
 }
 

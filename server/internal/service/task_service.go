@@ -49,9 +49,10 @@ func (s *TaskService) ListByGroup(group string) ([]*model.Task, error) {
 // TaskWithCount 任务 + 关联笔记数 + 番茄统计(响应结构,不污染 model.Task)
 type TaskWithCount struct {
 	*model.Task
-	NoteCount       int `json:"note_count"`
-	PomodoroCount   int `json:"pomodoro_count"`
-	PomodoroMinutes int `json:"pomodoro_minutes"`
+	NoteCount            int `json:"note_count"`
+	PomodoroCount        int `json:"pomodoro_count"`
+	PomodoroMinutes      int `json:"pomodoro_minutes"`
+	PomodoroTodayMinutes int `json:"pomodoro_today_minutes"`
 }
 
 func (s *TaskService) ListByGroupWithCount(group string) ([]TaskWithCount, error) {
@@ -76,10 +77,11 @@ func (s *TaskService) ListByGroupWithCount(group string) ([]TaskWithCount, error
 		t := tasks[i]
 		stats := pomodoroStats[t.ID]
 		out[i] = TaskWithCount{
-			Task:            t,
-			NoteCount:       counts[t.ID],
-			PomodoroCount:   stats.TotalCount,
-			PomodoroMinutes: stats.TotalMinutes,
+			Task:                 t,
+			NoteCount:            counts[t.ID],
+			PomodoroCount:        stats.TotalCount,
+			PomodoroMinutes:      stats.TotalMinutes,
+			PomodoroTodayMinutes: stats.TodayMinutes,
 		}
 	}
 	return out, nil
@@ -97,10 +99,11 @@ func (s *TaskService) GetWithCount(id int64) (*TaskWithCount, error) {
 	pomodoroStats, _ := s.pomodoroDAO.StatsByTaskIDs([]int64{id}, 30)
 	stats := pomodoroStats[id]
 	return &TaskWithCount{
-		Task:            t,
-		NoteCount:       counts[id],
-		PomodoroCount:   stats.TotalCount,
-		PomodoroMinutes: stats.TotalMinutes,
+		Task:                 t,
+		NoteCount:            counts[id],
+		PomodoroCount:        stats.TotalCount,
+		PomodoroMinutes:      stats.TotalMinutes,
+		PomodoroTodayMinutes: stats.TodayMinutes,
 	}, nil
 }
 
