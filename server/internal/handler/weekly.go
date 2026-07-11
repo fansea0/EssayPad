@@ -95,3 +95,16 @@ func (h *WeeklyHandler) Chat(c *gin.Context) {
 	}
 	serializer.Ok(c, gin.H{"user_message": user, "assistant_message": assistant})
 }
+
+func (h *WeeklyHandler) DeleteMessages(c *gin.Context) {
+	reportID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil || reportID <= 0 {
+		serializer.Err(c, http.StatusBadRequest, 400, "invalid report id")
+		return
+	}
+	if err := h.svc.DeleteMessages(reportID); err != nil {
+		serializer.Err(c, http.StatusInternalServerError, 500, err.Error())
+		return
+	}
+	serializer.Ok(c, gin.H{})
+}

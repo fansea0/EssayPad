@@ -62,6 +62,10 @@ func (s *WeeklyService) ListMessages(reportID int64) ([]*model.WeeklyReflectionM
 	return s.messageDAO.ListByReportID(reportID, 100)
 }
 
+func (s *WeeklyService) DeleteMessages(reportID int64) error {
+	return s.messageDAO.SoftDeleteByReportID(reportID)
+}
+
 func (s *WeeklyService) Chat(reportID int64, content string) (*model.WeeklyReflectionMessage, *model.WeeklyReflectionMessage, error) {
 	report, err := s.weeklyDAO.Get(reportID)
 	if err != nil {

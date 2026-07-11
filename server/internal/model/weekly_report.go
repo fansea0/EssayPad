@@ -37,4 +37,5 @@ type WeeklyReflection struct {
 	Observations []string `json:"observations"`
 	Growth       []string `json:"growth"`
 	Suggestions  []string `json:"suggestions"`
+	SuggestedQuestions []string `json:"suggested_questions"`
 }

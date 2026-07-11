@@ -229,7 +229,8 @@ actor APIClient {
         let observations: [String]
         let growth: [String]
         let suggestions: [String]
-        enum CodingKeys: String, CodingKey { case greeting, story, observations, growth, suggestions; case oneLiner = "one_liner" }
+        let suggestedQuestions: [String]?
+        enum CodingKeys: String, CodingKey { case greeting, story, observations, growth, suggestions; case oneLiner = "one_liner"; case suggestedQuestions = "suggested_questions" }
     }
 
     struct WeeklyReflectionMessage: Decodable, Identifiable {
@@ -261,6 +262,11 @@ actor APIClient {
         }
         let result: R = try await request(Endpoints.weeklyMessages(id: reportID), method: "POST", body: Body(content: content))
         return (result.userMessage, result.assistantMessage)
+    }
+
+    func deleteWeeklyMessages(reportID: Int64) async throws {
+        struct Empty: Decodable {}
+        let _: Empty = try await request(Endpoints.weeklyMessages(id: reportID), method: "DELETE")
     }
 
     func listTasks(group: TaskGroup = .today) async throws -> [TodoTask] {

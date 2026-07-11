@@ -92,7 +92,7 @@ func parseWeekly(content string) (*model.WeeklyReport, error) {
 }
 
 func reflectionSystemPrompt(days int) string {
-	return fmt.Sprintf("你是用户真诚、具体且不说教的周复盘伙伴。只能根据用户近 %d 天的笔记、日记与任务分析，不要编造事实。严格输出 JSON，不要 markdown 围栏。", days)
+	return fmt.Sprintf("你是熟悉用户记录的真诚朋友，不是效率教练。只能根据用户近 %d 天的笔记、日记与任务分析，不要编造事实。表达具体、温和、有自己的观察，避免空泛鼓励、官话和说教。严格输出 JSON，不要 markdown 围栏。", days)
 }
 
 func buildReflectionPrompt(input ReflectionInput) string {
@@ -101,7 +101,7 @@ func buildReflectionPrompt(input ReflectionInput) string {
 		Diaries []*model.DiaryEntry `json:"diaries"`
 		Tasks   TaskSummary         `json:"tasks"`
 	}{input.Notes, input.Diaries, input.Tasks}, "", "  ")
-	return fmt.Sprintf("以下是用户近 %d 天的记录：\n%s\n\n输出 JSON：\n{\n  \"greeting\": \"简短问候\",\n  \"one_liner\": \"本周一句话\",\n  \"story\": \"本周故事\",\n  \"observations\": [\"观察，最多3条\"],\n  \"growth\": [\"成长，最多3条\"],\n  \"suggestions\": [\"建议，最多3条\"]\n}", input.Days, string(payload))
+	return fmt.Sprintf("以下是用户近 %d 天的记录：\n%s\n\n输出 JSON：\n{\n  \"greeting\": \"一句自然问候\",\n  \"one_liner\": \"有记忆点的一句话，不超过35字\",\n  \"story\": \"2到3段本周故事，每段不超过80字\",\n  \"observations\": [\"有证据的观察，最多3条\"],\n  \"growth\": [\"真实成长，最多3条\"],\n  \"suggestions\": [\"小而具体的建议，最多3条\"],\n  \"suggested_questions\": [\"用户可能想继续问的自然问题，2到3条\"]\n}", input.Days, string(payload))
 }
 
 func parseReflection(content string) (*model.WeeklyReflection, error) {
@@ -114,7 +114,7 @@ func parseReflection(content string) (*model.WeeklyReflection, error) {
 }
 
 func reflectionChatSystemPrompt(reflectionJSON string) string {
-	return "你是用户的周复盘伙伴。请基于以下本周复盘继续自然对话，真诚具体，不说教，不编造事实。\n\n本周复盘：\n" + reflectionJSON
+	return "你是用户的周复盘伙伴。请基于以下本周复盘继续自然对话：像熟悉用户近况的朋友一样回应，少用结论和口号；先回应用户的真实感受，再给具体观察或一个可执行的小建议。不要为了延续聊天而反问，不要用问句收尾。使用短段落，必要时用 markdown 列表；可以自然使用 1 到 2 个 emoji，不编造事实。\n\n本周复盘：\n" + reflectionJSON
 }
 
 // FormatDueAt 把秒级时间戳格式化为 "YYYY-MM-DD"(本地时区)

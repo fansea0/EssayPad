@@ -49,3 +49,8 @@ func (d *WeeklyReflectionMessageDAO) ListByReportID(reportID int64, limit int) (
 	}
 	return list, rows.Err()
 }
+
+func (d *WeeklyReflectionMessageDAO) SoftDeleteByReportID(reportID int64) error {
+	_, err := d.db.Exec(`UPDATE weekly_reflection_messages SET is_deleted=1 WHERE report_id=? AND is_deleted=0`, reportID)
+	return err
+}

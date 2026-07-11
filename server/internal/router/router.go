@@ -74,6 +74,7 @@ func New(db *sql.DB, aic *ai.Client) *gin.Engine {
 		v1.POST("/weekly/generate", weeklyH.Generate)
 		v1.GET("/weekly/:id/messages", weeklyH.ListMessages)
 		v1.POST("/weekly/:id/messages", weeklyH.Chat)
+		v1.DELETE("/weekly/:id/messages", weeklyH.DeleteMessages)
 		v1.PUT("/ai-config", configH.Update)
 		v1.GET("/ai-config/stats", configH.Stats)
 		v1.POST("/pomodoros", pomodoroH.Create)
