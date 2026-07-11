@@ -15,16 +15,11 @@
 ### 任务与专注
 
 <p>
-  <img src="docs/product/task-board.png" alt="任务面板" width="48%" />
   <img src="docs/product/focus-timer.png" alt="专注计时器" width="48%" />
 </p>
 
 ### AI 周报
 
-<p>
-  <img src="docs/product/ai-weekly-review-summary.png" alt="AI 周报总结" width="48%" />
-  <img src="docs/product/ai-weekly-review-chat.png" alt="AI 周报对话" width="48%" />
-</p>
 
 ---
 
