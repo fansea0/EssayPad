@@ -29,11 +29,17 @@ struct ContentView: View {
     var body: some View {
         NavigationSplitView {
             VStack(spacing: 0) {
-                HeaderBar(title: "EssayPad",
-                          subtitle: headerSubtitle,
-                          subtitleIcon: headerSubtitleIcon)
+                AppSidebarHeader()
                     .padding(.horizontal, 16)
-                    .padding(.top, 14)
+                    .padding(.top, 16)
+                    .padding(.bottom, 14)
+
+                PrimaryNavigation(current: $mainMode)
+                    .padding(.horizontal, 10)
+                    .padding(.bottom, 12)
+
+                Divider()
+                    .padding(.horizontal, 12)
                     .padding(.bottom, 10)
 
                 if mainMode == .notes {
@@ -48,9 +54,9 @@ struct ContentView: View {
 
                 Spacer(minLength: 0)
 
-                ModeSwitcher(current: $mainMode)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 5)
+                SidebarFooter(serverOnline: serverOnline)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
             }
             .frame(minWidth: 300)
             .navigationSplitViewColumnWidth(min: 300, ideal: 340)
@@ -250,28 +256,6 @@ struct ContentView: View {
         store.notesByCategory.values.reduce(0) { $0 + $1.count }
     }
 
-    private var headerSubtitle: String {
-        switch mainMode {
-        case .notes:
-            return store.selectedCategory.name
-        case .tasks:
-            return "任务面板"
-        case .diary:
-            return "日记"
-        }
-    }
-
-    private var headerSubtitleIcon: String {
-        switch mainMode {
-        case .notes:
-            return store.selectedCategory.icon
-        case .tasks:
-            return "checklist"
-        case .diary:
-            return "book.closed"
-        }
-    }
-
     private func mainModeName(_ mode: MainMode) -> String {
         switch mode {
         case .notes:
@@ -297,25 +281,95 @@ struct ContentView: View {
     }
 }
 
-private struct HeaderBar: View {
-    let title: String
-    let subtitle: String
-    let subtitleIcon: String
-
+private struct AppSidebarHeader: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title)
-                .font(.system(size: 22, weight: .bold))
-                .foregroundStyle(.primary)
-            HStack(spacing: 6) {
-                Image(systemName: subtitleIcon)
-                    .foregroundStyle(Color.accentColor)
-                Text(subtitle)
-                    .font(.system(size: 12, weight: .medium))
+        HStack(spacing: 10) {
+            Image(systemName: "square.and.pencil")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 32, height: 32)
+                .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 8))
+            VStack(alignment: .leading, spacing: 2) {
+                Text("EssayPad")
+                    .font(.system(size: 17, weight: .bold))
+                Text("个人工作台")
+                    .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(.secondary)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+private struct PrimaryNavigation: View {
+    @Binding var current: ContentView.MainMode
+
+    var body: some View {
+        VStack(spacing: 3) {
+            navigationItem(.notes, icon: "note.text", title: "笔记", subtitle: "随手记录")
+            navigationItem(.tasks, icon: "checklist", title: "任务", subtitle: "今日安排")
+            navigationItem(.diary, icon: "book.closed", title: "日记", subtitle: "每日回顾")
+        }
+    }
+
+    private func navigationItem(_ mode: ContentView.MainMode, icon: String, title: String, subtitle: String) -> some View {
+        Button {
+            current = mode
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: icon)
+                    .font(.system(size: 13, weight: .semibold))
+                    .frame(width: 22, height: 22)
+                    .foregroundStyle(current == mode ? Color.accentColor : Color.secondary)
+                    .background(current == mode ? Color.accentColor.opacity(0.14) : Color.clear, in: RoundedRectangle(cornerRadius: 6))
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(title)
+                        .font(.system(size: 13, weight: .semibold))
+                    Text(subtitle)
+                        .font(.system(size: 10))
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                if current == mode {
+                    Circle()
+                        .fill(Color.accentColor)
+                        .frame(width: 5, height: 5)
+                }
+            }
+            .padding(.horizontal, 8)
+            .frame(minHeight: 40)
+            .background(current == mode ? Color.accentColor.opacity(0.10) : Color.clear,
+                        in: RoundedRectangle(cornerRadius: 7))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .help("切换到\(title)")
+    }
+}
+
+private struct SidebarFooter: View {
+    let serverOnline: Bool
+
+    var body: some View {
+        HStack(spacing: 7) {
+            Circle()
+                .fill(serverOnline ? Color.green : Color.red)
+                .frame(width: 7, height: 7)
+            Text(serverOnline ? "本地数据已连接" : "本地服务未连接")
+                .font(.system(size: 10, weight: .medium))
+                .foregroundStyle(.secondary)
+            Spacer()
+            Button {
+                NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+            } label: {
+                Image(systemName: "gearshape")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(.secondary)
+                    .frame(width: 24, height: 24)
+            }
+            .buttonStyle(.plain)
+            .help("设置")
+        }
     }
 }
 
@@ -418,55 +472,6 @@ private struct StatusBar: View {
             return "任务面板"
         case .diary:
             return "日记"
-        }
-    }
-}
-
-private struct ModeSwitcher: View {
-    @Binding var current: ContentView.MainMode
-
-    var body: some View {
-        HStack(spacing: 0) {
-            modeButton(.notes, icon: "note.text", label: "笔记")
-            modeButton(.tasks, icon: "checklist", label: "任务")
-            modeButton(.diary, icon: "book.closed", label: "日记")
-        }
-        .padding(2)
-        .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 8))
-    }
-
-    private func modeButton(_ mode: ContentView.MainMode, icon: String, label: String) -> some View {
-        Button {
-            current = mode
-        } label: {
-            HStack(spacing: 3) {
-                Image(systemName: icon)
-                    .font(.system(size: 10, weight: .medium))
-                Text(label)
-                    .font(.system(size: 10, weight: .medium))
-            }
-            .frame(maxWidth: .infinity, minHeight: 20)
-            .padding(.vertical, 2)
-            .padding(.horizontal, 6)
-            .background(
-                current == mode ? Color.accentColor : Color.clear,
-                in: RoundedRectangle(cornerRadius: 5)
-            )
-            .foregroundStyle(current == mode ? Color.white : Color.primary)
-            .contentShape(Rectangle())   // 关键:让整个矩形都接收点击,不止图标/文字
-        }
-        .buttonStyle(.plain)
-        .help(helpText(for: mode))
-    }
-
-    private func helpText(for mode: ContentView.MainMode) -> String {
-        switch mode {
-        case .notes:
-            return "切换到笔记"
-        case .tasks:
-            return "切换到任务"
-        case .diary:
-            return "切换到日记"
         }
     }
 }
