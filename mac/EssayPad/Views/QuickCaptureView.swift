@@ -122,6 +122,9 @@ struct QuickCaptureView: View {
         MarkdownStyledEditor(
             text: content,
             focusOnAppear: editingNote != nil,
+            fontSize: 13,
+            horizontalPadding: 10,
+            verticalPadding: 8,
             onTextChange: { newValue in
                 if content != newValue { content = newValue }
             }

@@ -237,6 +237,9 @@ final class MarkdownTextView: NSTextView {
 struct MarkdownStyledEditor: NSViewRepresentable {
     var text: String
     var focusOnAppear = false
+    var fontSize: CGFloat = 14
+    var horizontalPadding: CGFloat = 28
+    var verticalPadding: CGFloat = 12
     var onTextChange: (String) -> Void
 
     func makeNSView(context: Context) -> NSScrollView {
@@ -258,7 +261,7 @@ struct MarkdownStyledEditor: NSViewRepresentable {
 
         textView.delegate = context.coordinator
         textView.string = text
-        textView.font = .systemFont(ofSize: 14)
+        textView.font = .systemFont(ofSize: fontSize)
         textView.isRichText = true
         textView.allowsUndo = true
         textView.usesFindBar = true
@@ -271,8 +274,8 @@ struct MarkdownStyledEditor: NSViewRepresentable {
         textView.isAutomaticLinkDetectionEnabled = false
         textView.isAutomaticDataDetectionEnabled = false
         textView.allowsDocumentBackgroundColorChange = false
-        textView.textContainerInset = NSSize(width: 0, height: 12)
-        textView.textContainer?.lineFragmentPadding = 28
+        textView.textContainerInset = NSSize(width: 0, height: verticalPadding)
+        textView.textContainer?.lineFragmentPadding = horizontalPadding
         textView.backgroundColor = .textBackgroundColor
         textView.textColor = .labelColor
         textView.insertionPointColor = .labelColor
