@@ -112,7 +112,7 @@ func (c *Client) GenerateReflection(input ReflectionInput) (*model.WeeklyReflect
 	c.mu.RUnlock()
 	messages := []*schema.Message{{Role: schema.System, Content: reflectionSystemPrompt(input.Days)}, {Role: schema.User, Content: buildReflectionPrompt(input)}}
 	if arkChat != nil {
-		response, err := arkChat.Generate(context.Background(), messages, arkmodel.WithCache(&arkmodel.CacheOption{APIType: arkmodel.ResponsesAPI, SessionCache: &arkmodel.SessionCacheConfig{EnableCache: true, TTL: 86400}}))
+		response, err := arkChat.Generate(context.Background(), messages, arkmodel.WithCache(&arkmodel.CacheOption{APIType: arkmodel.ResponsesAPI}))
 		if err != nil {
 			return nil, "", 0, fmt.Errorf("generate reflection: %w", err)
 		}
@@ -136,7 +136,7 @@ func (c *Client) ChatReflection(reflectionJSON string, history []*model.WeeklyRe
 	chat, arkChat := c.chat, c.arkChat
 	c.mu.RUnlock()
 	if arkChat != nil && previousResponseID != "" {
-		response, err := arkChat.Generate(context.Background(), []*schema.Message{schema.UserMessage(content)}, arkmodel.WithCache(&arkmodel.CacheOption{APIType: arkmodel.ResponsesAPI, HeadPreviousResponseID: &previousResponseID, SessionCache: &arkmodel.SessionCacheConfig{EnableCache: true, TTL: 86400}}))
+		response, err := arkChat.Generate(context.Background(), []*schema.Message{schema.UserMessage(content)}, arkmodel.WithCache(&arkmodel.CacheOption{APIType: arkmodel.ResponsesAPI, HeadPreviousResponseID: &previousResponseID}))
 		if err == nil {
 			responseID, _ := arkmodel.GetResponseID(response)
 			return response.Content, responseID, time.Now().Add(24 * time.Hour).Unix(), nil
