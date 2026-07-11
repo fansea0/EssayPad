@@ -11,5 +11,11 @@ mac/build/
 mac/DerivedData/
 mac/*.xcodeproj/xcuserdata/
 mac/*.xcworkspace/xcuserdata/
+mobile/.dart_tool/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/.metadata
+mobile/build/
+mobile/.idea/
 *.swp
 .DS_Store
