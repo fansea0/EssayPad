@@ -40,7 +40,8 @@ actor APIClient {
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         if let body {
             req.httpBody = try JSONEncoder().encode(AnyEncodable(body))
-            if let bodyData = req.httpBody, !bodyData.isEmpty, bodyData.count < 2000 {
+            if let bodyData = req.httpBody, !bodyData.isEmpty, bodyData.count < 2000,
+               url.path != Endpoints.aiConfig.path {
                 NSLog("[ES] request \(method) \(url.path) body=\(String(data: bodyData, encoding: .utf8) ?? "<err>")")
             }
         }
@@ -406,11 +407,26 @@ actor APIClient {
         return r.list
     }
 
-    /// 更新 AI 服务配置(BaseURL / API Key / Model)
-    func updateAIConfig(baseURL: String, apiKey: String, model: String) async throws {
+    struct AIConfigView: Decodable {
+        let baseURL: String
+        let model: String
+        let hasAPIKey: Bool
+        enum CodingKeys: String, CodingKey {
+            case baseURL = "base_url"
+            case model
+            case hasAPIKey = "has_api_key"
+        }
+    }
+
+    func fetchAIConfig() async throws -> AIConfigView {
+        try await request(Endpoints.aiConfig, method: "GET")
+    }
+
+    /// apiKey 为 nil 时保留数据库中的密钥，为空字符串时清除。
+    func updateAIConfig(baseURL: String, apiKey: String?, model: String) async throws {
         struct Body: Encodable {
             let baseURL: String
-            let apiKey: String
+            let apiKey: String?
             let model: String
             enum CodingKeys: String, CodingKey {
                 case baseURL = "base_url"

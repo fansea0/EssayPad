@@ -64,6 +64,22 @@ Base URL: `http://127.0.0.1:18888`
 { "code":0,"data":{ "user_message":{...},"assistant_message":{...} } }
 ```
 
+## 8. AI 配置
+
+- `GET /api/v1/ai-config`
+- resp 200：API Key 仅返回是否已配置，不返回原文。
+```json
+{ "code":0,"data":{ "base_url":"https://example.com/v1","model":"model-name","has_api_key":true } }
+```
+
+- `PUT /api/v1/ai-config`
+- req：不传或传 `null` 表示保留原 Key，空字符串表示清除，非空字符串表示替换。
+```json
+{ "base_url":"https://example.com/v1","api_key":"new-key","model":"model-name" }
+```
+
+配置保存在通用 `app_settings` 表中，以 `scope + setting_key` 唯一定位。`setting_value` 支持普通字符串或 JSON，`is_secret=1` 表示敏感配置；敏感值不会出现在查询接口和请求日志中。
+
 ## 错误码
 - 400 参数错误
 - 404 不存在

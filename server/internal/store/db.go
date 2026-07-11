@@ -99,6 +99,22 @@ CREATE TABLE IF NOT EXISTS diary_entries (
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_diary_user_date ON diary_entries(user_id, diary_date);
 CREATE INDEX IF NOT EXISTS idx_diary_user_date_deleted ON diary_entries(user_id, diary_date DESC, is_deleted);
 CREATE INDEX IF NOT EXISTS idx_diary_user_updated ON diary_entries(user_id, updated_at DESC);
+
+CREATE TABLE IF NOT EXISTS app_settings (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	scope VARCHAR(64) NOT NULL DEFAULT '',
+	setting_key VARCHAR(100) NOT NULL DEFAULT '',
+	setting_value TEXT NOT NULL DEFAULT '',
+	value_type TINYINT NOT NULL DEFAULT 0,
+	is_secret TINYINT NOT NULL DEFAULT 0,
+	created_at BIGINT NOT NULL DEFAULT 0,
+	updated_at BIGINT NOT NULL DEFAULT 0,
+	is_deleted TINYINT NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX IF NOT EXISTS uniq_app_settings_scope_key
+	ON app_settings(scope, setting_key);
+CREATE INDEX IF NOT EXISTS idx_app_settings_scope_deleted
+	ON app_settings(scope, is_deleted);
 `
 
 func OpenDB(path string) (*sql.DB, error) {

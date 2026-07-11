@@ -17,9 +17,9 @@ func Load() *Config {
 	return &Config{
 		Port:      getEnv("ESSAYPAD_PORT", "18888"),
 		DBPath:    getEnv("ESSAYPAD_DB_PATH", "./data/essaypad.db"),
-		AIBaseURL: "https://ark.cn-beijing.volces.com/api/v3",
-		AIAPIKey:  "d1cc74fc-2c9f-4a20-821c-2b54e90e65bb",
-		AIModel:   "doubao-seed-2-0-mini-260428",
+		AIBaseURL: getEnv("ESSAYPAD_AI_BASE_URL", "https://ark.cn-beijing.volces.com/api/v3"),
+		AIAPIKey:  getEnv("ESSAYPAD_AI_API_KEY", ""),
+		AIModel:   getEnv("ESSAYPAD_AI_MODEL", "doubao-seed-2-0-mini-260428"),
 	}
 }
 

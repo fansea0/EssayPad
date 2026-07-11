@@ -8,6 +8,7 @@ import (
 	"essaypad/config"
 	"essaypad/internal/ai"
 	"essaypad/internal/router"
+	"essaypad/internal/service"
 	"essaypad/internal/store"
 )
 
@@ -27,8 +28,16 @@ func main() {
 	if err != nil {
 		log.Printf("warn: init AI client failed: %v (周报功能不可用)", err)
 	}
+	configSvc := service.NewConfigService(
+		store.NewAppSettingDAO(db),
+		aic,
+		service.AIConfig{BaseURL: cfg.AIBaseURL, APIKey: cfg.AIAPIKey, Model: cfg.AIModel},
+	)
+	if err := configSvc.Reload(); err != nil {
+		log.Printf("warn: reload AI config failed: %v", err)
+	}
 
-	r := router.New(db, aic)
+	r := router.New(db, aic, configSvc)
 	addr := "127.0.0.1:" + cfg.Port
 	log.Printf("essaypad server listening on %s", addr)
 	if err := r.Run(addr); err != nil {

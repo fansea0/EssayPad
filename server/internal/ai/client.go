@@ -75,9 +75,8 @@ func (c *Client) GenerateWeekly(input WeeklyInput) (*model.WeeklyReport, error) 
 	return c.generateWeeklyHTTP(input)
 }
 
-// SetConfig 运行时更新 AI 配置(线程安全)
-// 当 baseURL 或 apiKey 为空时,只更新 cfg 字段,不重建 chat(用于回退到 env 配置)
-func (c *Client) SetConfig(baseURL, apiKey, modelName string) error {
+// ReloadConfig 原子替换进程内 AI 配置与模型客户端。
+func (c *Client) ReloadConfig(baseURL, apiKey, modelName string) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 

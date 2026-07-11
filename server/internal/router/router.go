@@ -16,13 +16,15 @@ import (
 	"essaypad/internal/store"
 )
 
-func New(db *sql.DB, aic *ai.Client) *gin.Engine {
+func New(db *sql.DB, aic *ai.Client, configSvc *service.ConfigService) *gin.Engine {
 	r := gin.Default()
 	r.Use(func(c *gin.Context) {
 		if c.Request.Method == "PUT" || c.Request.Method == "POST" {
 			body, _ := io.ReadAll(c.Request.Body)
 			c.Request.Body = io.NopCloser(bytes.NewBuffer(body))
-			if len(body) > 0 && len(body) < 1000 && !strings.HasPrefix(c.Request.URL.Path, "/api/v1/weekly/") {
+			if len(body) > 0 && len(body) < 1000 &&
+				!strings.HasPrefix(c.Request.URL.Path, "/api/v1/weekly/") &&
+				c.Request.URL.Path != "/api/v1/ai-config" {
 				log.Printf("[SRV] %s %s body=%s", c.Request.Method, c.Request.URL.Path, string(body))
 			}
 		}
@@ -45,7 +47,7 @@ func New(db *sql.DB, aic *ai.Client) *gin.Engine {
 	taskH := handler.NewTaskHandler(taskSvc, dao)
 	pomodoroH := handler.NewPomodoroHandler(pomodoroSvc)
 	diaryH := handler.NewDiaryHandler(diarySvc)
-	configH := handler.NewConfigHandler(aic)
+	configH := handler.NewConfigHandler(configSvc)
 
 	v1 := r.Group("/api/v1")
 	{
@@ -76,6 +78,7 @@ func New(db *sql.DB, aic *ai.Client) *gin.Engine {
 		v1.POST("/weekly/:id/messages", weeklyH.Chat)
 		v1.DELETE("/weekly/:id/messages", weeklyH.DeleteMessages)
 		v1.PUT("/ai-config", configH.Update)
+		v1.GET("/ai-config", configH.Get)
 		v1.GET("/ai-config/stats", configH.Stats)
 		v1.POST("/pomodoros", pomodoroH.Create)
 		v1.GET("/pomodoros", pomodoroH.List)

@@ -11,6 +11,7 @@ extension Notification.Name {
 struct EssayPadApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var store = NoteStore.shared
+    @State private var aiConfig = AIConfigurationStore.shared
     @State private var serverRunning = false
     @State private var settingsWindowOpen = false
 
@@ -57,6 +58,9 @@ struct EssayPadApp: App {
 
     private func checkServer() async {
         serverRunning = await LocalServerManager.isRunning()
+        if serverRunning {
+            await aiConfig.loadIfNeeded()
+        }
     }
 }
 

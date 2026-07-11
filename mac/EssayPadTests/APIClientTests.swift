@@ -114,4 +114,22 @@ final class APIClientTests: XCTestCase {
 
         XCTAssertEqual(task.pomodoroTodayMinutes, 50)
     }
+
+    func testFetchAIConfigDoesNotRequireAPIKeyValue() async throws {
+        let json = """
+        {"code":0,"msg":"ok","data":{"base_url":"https://example.com/v1","model":"model-a","has_api_key":true}}
+        """.data(using: .utf8)!
+        Mock.handler = { _ in
+            (HTTPURLResponse(url: URL(string: "http://x")!, statusCode: 200, httpVersion: nil, headerFields: nil)!, json)
+        }
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [Mock.self]
+        let client = APIClient(session: URLSession(configuration: config))
+
+        let value = try await client.fetchAIConfig()
+
+        XCTAssertEqual(value.baseURL, "https://example.com/v1")
+        XCTAssertEqual(value.model, "model-a")
+        XCTAssertTrue(value.hasAPIKey)
+    }
 }
