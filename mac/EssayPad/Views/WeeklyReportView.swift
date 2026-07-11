@@ -62,6 +62,7 @@ struct WeeklyReportView: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack { Label("和 AI 聊聊这一周", systemImage: "message").font(.headline); Spacer(); Button { Task { await clearMessages() } } label: { Image(systemName: "trash") }.buttonStyle(.borderless).help("清空聊天记录") }
             ForEach(messages) { message in HStack { if message.isAssistant { ReflectionMessageText(content: message.content).bubble(.assistant); Spacer(minLength: 48) } else { Spacer(minLength: 48); Text(message.content).bubble(.user) } } }
+            if sending && streamingText.isEmpty { HStack { ReflectionThinkingIndicator().bubble(.assistant); Spacer(minLength: 48) } }
             if !streamingText.isEmpty { HStack { ReflectionMessageText(content: streamingText + "▍").bubble(.assistant); Spacer(minLength: 48) } }
             let questions = report?.reflection?.suggestedQuestions ?? []
             if !questions.isEmpty { FlowLayout(spacing: 7) { ForEach(questions, id: \.self) { question in Button(question) { input = question }.buttonStyle(.bordered) } } }
@@ -96,6 +97,24 @@ struct WeeklyReportView: View {
 
 private enum ReflectionBubble { case assistant, user }
 private struct ReflectionMessageText: View { let content: String; var body: some View { Text((try? AttributedString(markdown: content)) ?? AttributedString(content)).font(.system(size: 14)).lineSpacing(5).textSelection(.enabled) } }
+private struct ReflectionThinkingIndicator: View {
+    var body: some View {
+        TimelineView(.animation) { context in
+            let phase = context.date.timeIntervalSinceReferenceDate
+            HStack(spacing: 6) {
+                Image(systemName: "sparkles").font(.caption).foregroundStyle(Color.accentColor)
+                ForEach(0..<3, id: \.self) { index in
+                    Circle()
+                        .fill(Color.accentColor.opacity(0.72))
+                        .frame(width: 6, height: 6)
+                        .offset(y: sin(phase * 5 + Double(index) * 0.65) * -3)
+                }
+            }
+            .frame(height: 18)
+            .accessibilityLabel("AI 正在思考")
+        }
+    }
+}
 private extension View { func bubble(_ kind: ReflectionBubble) -> some View { padding(14).foregroundStyle(kind == .assistant ? Color.primary : Color.white).background(kind == .assistant ? Color.accentColor.opacity(0.10) : Color.accentColor, in: RoundedRectangle(cornerRadius: 9)) } }
 private struct FlowLayout: Layout {
     let spacing: CGFloat

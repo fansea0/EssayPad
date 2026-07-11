@@ -101,7 +101,7 @@ func buildReflectionPrompt(input ReflectionInput) string {
 		Diaries []*model.DiaryEntry `json:"diaries"`
 		Tasks   TaskSummary         `json:"tasks"`
 	}{input.Notes, input.Diaries, input.Tasks}, "", "  ")
-	return fmt.Sprintf("以下是用户近 %d 天的记录：\n%s\n\n输出 JSON：\n{\n  \"greeting\": \"一句自然问候\",\n  \"one_liner\": \"有记忆点的一句话，不超过35字\",\n  \"story\": \"2到3段本周故事，每段不超过80字\",\n  \"observations\": [\"有证据的观察，最多3条\"],\n  \"growth\": [\"真实成长，最多3条\"],\n  \"suggestions\": [\"小而具体的建议，最多3条\"],\n  \"suggested_questions\": [\"用户可能想继续问的自然问题，2到3条\"]\n}", input.Days, string(payload))
+	return fmt.Sprintf("以下是用户近 %d 天的记录：\n%s\n\n输出 JSON：\n{\n  \"greeting\": \"一句自然问候\",\n  \"one_liner\": \"有记忆点的一句话，不超过35字\",\n  \"story\": \"2到3段本周故事，每段不超过80字\",\n  \"observations\": [\"有证据的观察，最多3条\"],\n  \"growth\": [\"真实成长，最多3条\"],\n  \"suggestions\": [\"小而具体的建议，最多3条\"],\n  \"suggested_questions\": [\"用户点击后发给 AI 的第一人称追问，2到3条，例如：我下周应该先推进什么？、我该怎么处理那个逾期任务？；不能写成 AI 问用户的话\"]\n}", input.Days, string(payload))
 }
 
 func parseReflection(content string) (*model.WeeklyReflection, error) {
