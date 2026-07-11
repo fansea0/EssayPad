@@ -3,6 +3,7 @@ package store
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	_ "modernc.org/sqlite"
 )
@@ -30,12 +31,28 @@ CREATE TABLE IF NOT EXISTS weekly_reports (
     highlights TEXT NOT NULL DEFAULT '',
     action_items TEXT NOT NULL DEFAULT '',
     note_count INTEGER NOT NULL DEFAULT 0,
+	reflection_json TEXT NOT NULL DEFAULT '',
+	response_id VARCHAR(100) NOT NULL DEFAULT '',
+	response_expire_at BIGINT NOT NULL DEFAULT 0,
     created_at BIGINT NOT NULL DEFAULT 0
 );
 CREATE UNIQUE INDEX IF NOT EXISTS idx_weekly_reports_window
   ON weekly_reports(preset, range_start, range_end);
 CREATE INDEX IF NOT EXISTS idx_weekly_reports_created
   ON weekly_reports(created_at DESC);
+
+CREATE TABLE IF NOT EXISTS weekly_reflection_messages (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	report_id BIGINT NOT NULL DEFAULT 0,
+	role TINYINT NOT NULL DEFAULT 0,
+	content TEXT NOT NULL DEFAULT '',
+	response_id VARCHAR(100) NOT NULL DEFAULT '',
+	previous_response_id VARCHAR(100) NOT NULL DEFAULT '',
+	created_at BIGINT NOT NULL DEFAULT 0,
+	is_deleted TINYINT NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_weekly_reflection_messages_report_created
+	ON weekly_reflection_messages(report_id, created_at ASC);
 
 CREATE TABLE IF NOT EXISTS tasks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -129,6 +146,15 @@ func migrate(db *sql.DB) error {
 	}
 	if _, err := db.Exec("CREATE INDEX IF NOT EXISTS idx_notes_task_id ON notes(task_id)"); err != nil {
 		return err
+	}
+	for _, column := range []string{
+		"reflection_json TEXT NOT NULL DEFAULT ''",
+		"response_id VARCHAR(100) NOT NULL DEFAULT ''",
+		"response_expire_at BIGINT NOT NULL DEFAULT 0",
+	} {
+		if _, err := db.Exec("ALTER TABLE weekly_reports ADD COLUMN " + column); err != nil && !strings.Contains(err.Error(), "duplicate column") {
+			return err
+		}
 	}
 	return nil
 }

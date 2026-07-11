@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	arkmodel "github.com/cloudwego/eino-ext/components/model/ark"
 	openaimodel "github.com/cloudwego/eino-ext/components/model/openai"
 	"github.com/cloudwego/eino/schema"
 
@@ -16,10 +17,11 @@ import (
 )
 
 type Client struct {
-	mu    sync.RWMutex
-	chat  *openaimodel.ChatModel
-	cfg   clientCfg
-	stats *Stats
+	mu      sync.RWMutex
+	chat    *openaimodel.ChatModel
+	arkChat *arkmodel.ChatModel
+	cfg     clientCfg
+	stats   *Stats
 }
 
 type clientCfg struct {
@@ -43,6 +45,9 @@ func NewClient(baseURL, apiKey, modelName string) (*Client, error) {
 		return c, nil
 	}
 	c.chat = cm
+	if strings.Contains(baseURL, "ark.cn-beijing.volces.com") {
+		c.arkChat, _ = arkmodel.NewChatModel(context.Background(), &arkmodel.ChatModelConfig{BaseURL: baseURL, APIKey: apiKey, Model: modelName})
+	}
 	return c, nil
 }
 
@@ -81,6 +86,7 @@ func (c *Client) SetConfig(baseURL, apiKey, modelName string) error {
 	// baseURL/apiKey 为空,降级为"未配置"——清空 chat
 	if baseURL == "" || apiKey == "" {
 		c.chat = nil
+		c.arkChat = nil
 		return nil
 	}
 
@@ -93,7 +99,66 @@ func (c *Client) SetConfig(baseURL, apiKey, modelName string) error {
 		return fmt.Errorf("create chat model: %w", err)
 	}
 	c.chat = cm
+	c.arkChat = nil
+	if strings.Contains(baseURL, "ark.cn-beijing.volces.com") {
+		c.arkChat, _ = arkmodel.NewChatModel(context.Background(), &arkmodel.ChatModelConfig{BaseURL: baseURL, APIKey: apiKey, Model: modelName})
+	}
 	return nil
+}
+
+func (c *Client) GenerateReflection(input ReflectionInput) (*model.WeeklyReflection, string, int64, error) {
+	c.mu.RLock()
+	chat, arkChat := c.chat, c.arkChat
+	c.mu.RUnlock()
+	messages := []*schema.Message{{Role: schema.System, Content: reflectionSystemPrompt(input.Days)}, {Role: schema.User, Content: buildReflectionPrompt(input)}}
+	if arkChat != nil {
+		response, err := arkChat.Generate(context.Background(), messages, arkmodel.WithCache(&arkmodel.CacheOption{APIType: arkmodel.ResponsesAPI, SessionCache: &arkmodel.SessionCacheConfig{EnableCache: true, TTL: 86400}}))
+		if err != nil {
+			return nil, "", 0, fmt.Errorf("generate reflection: %w", err)
+		}
+		reflection, err := parseReflection(response.Content)
+		responseID, _ := arkmodel.GetResponseID(response)
+		return reflection, responseID, time.Now().Add(24 * time.Hour).Unix(), err
+	}
+	if chat == nil {
+		return nil, "", 0, fmt.Errorf("AI client not configured")
+	}
+	response, err := chat.Generate(context.Background(), messages)
+	if err != nil {
+		return nil, "", 0, fmt.Errorf("generate reflection: %w", err)
+	}
+	reflection, err := parseReflection(response.Content)
+	return reflection, "", 0, err
+}
+
+func (c *Client) ChatReflection(reflectionJSON string, history []*model.WeeklyReflectionMessage, content, previousResponseID string) (string, string, int64, error) {
+	c.mu.RLock()
+	chat, arkChat := c.chat, c.arkChat
+	c.mu.RUnlock()
+	if arkChat != nil && previousResponseID != "" {
+		response, err := arkChat.Generate(context.Background(), []*schema.Message{schema.UserMessage(content)}, arkmodel.WithCache(&arkmodel.CacheOption{APIType: arkmodel.ResponsesAPI, HeadPreviousResponseID: &previousResponseID, SessionCache: &arkmodel.SessionCacheConfig{EnableCache: true, TTL: 86400}}))
+		if err == nil {
+			responseID, _ := arkmodel.GetResponseID(response)
+			return response.Content, responseID, time.Now().Add(24 * time.Hour).Unix(), nil
+		}
+	}
+	if chat == nil {
+		return "", "", 0, fmt.Errorf("AI client not configured")
+	}
+	messages := []*schema.Message{{Role: schema.System, Content: reflectionChatSystemPrompt(reflectionJSON)}}
+	for _, message := range history {
+		role := schema.User
+		if message.Role == model.WeeklyReflectionRoleAssistant {
+			role = schema.Assistant
+		}
+		messages = append(messages, &schema.Message{Role: role, Content: message.Content})
+	}
+	messages = append(messages, schema.UserMessage(content))
+	response, err := chat.Generate(context.Background(), messages)
+	if err != nil {
+		return "", "", 0, fmt.Errorf("chat reflection: %w", err)
+	}
+	return response.Content, "", 0, nil
 }
 
 func (c *Client) generateWeeklyEino(input WeeklyInput) (*model.WeeklyReport, error) {

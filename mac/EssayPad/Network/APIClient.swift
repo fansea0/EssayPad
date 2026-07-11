@@ -183,6 +183,7 @@ actor APIClient {
         let highlights: [String]
         let actionItems: [String]
         let noteCount: Int
+        let reflectionJSON: String
         let createdAt: Int64
         let fromCache: Bool?
 
@@ -195,6 +196,7 @@ actor APIClient {
             case highlights
             case actionItems = "action_items"
             case noteCount = "note_count"
+            case reflectionJSON = "reflection_json"
             case createdAt = "created_at"
             case fromCache = "from_cache"
         }
@@ -209,15 +211,56 @@ actor APIClient {
             self.highlights = (try? c.decode([String].self, forKey: .highlights)) ?? []
             self.actionItems = (try? c.decode([String].self, forKey: .actionItems)) ?? []
             self.noteCount = (try? c.decode(Int.self, forKey: .noteCount)) ?? 0
+            self.reflectionJSON = (try? c.decode(String.self, forKey: .reflectionJSON)) ?? ""
             self.createdAt = (try? c.decode(Int64.self, forKey: .createdAt)) ?? 0
             self.fromCache = try? c.decode(Bool.self, forKey: .fromCache)
         }
+
+        var reflection: WeeklyReflection? {
+            guard let data = reflectionJSON.data(using: .utf8) else { return nil }
+            return try? JSONDecoder().decode(WeeklyReflection.self, from: data)
+        }
+    }
+
+    struct WeeklyReflection: Decodable {
+        let greeting: String
+        let oneLiner: String
+        let story: String
+        let observations: [String]
+        let growth: [String]
+        let suggestions: [String]
+        enum CodingKeys: String, CodingKey { case greeting, story, observations, growth, suggestions; case oneLiner = "one_liner" }
+    }
+
+    struct WeeklyReflectionMessage: Decodable, Identifiable {
+        let id: Int64
+        let reportID: Int64
+        let role: Int
+        let content: String
+        let createdAt: Int64
+        enum CodingKeys: String, CodingKey { case id, role, content; case reportID = "report_id"; case createdAt = "created_at" }
+        var isAssistant: Bool { role == 1 }
     }
 
     func generateWeekly(preset: WeeklyPreset = .week, force: Bool = false) async throws -> WeeklyReport {
         struct Body: Encodable { let preset: String; let force: Bool }
         return try await request(Endpoints.weeklyGenerate, method: "POST",
                                  body: Body(preset: preset.rawValue, force: force))
+    }
+
+    func listWeeklyMessages(reportID: Int64) async throws -> [WeeklyReflectionMessage] {
+        struct R: Decodable { let list: [WeeklyReflectionMessage] }
+        let result: R = try await request(Endpoints.weeklyMessages(id: reportID), method: "GET")
+        return result.list
+    }
+
+    func sendWeeklyMessage(reportID: Int64, content: String) async throws -> (WeeklyReflectionMessage, WeeklyReflectionMessage) {
+        struct Body: Encodable { let content: String }
+        struct R: Decodable { let userMessage: WeeklyReflectionMessage; let assistantMessage: WeeklyReflectionMessage
+            enum CodingKeys: String, CodingKey { case userMessage = "user_message"; case assistantMessage = "assistant_message" }
+        }
+        let result: R = try await request(Endpoints.weeklyMessages(id: reportID), method: "POST", body: Body(content: content))
+        return (result.userMessage, result.assistantMessage)
     }
 
     func listTasks(group: TaskGroup = .today) async throws -> [TodoTask] {

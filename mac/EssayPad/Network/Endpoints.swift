@@ -43,6 +43,10 @@ enum Endpoints {
         APIConfig.baseURL.appendingPathComponent("/api/v1/tasks/\(taskID)/notes/\(noteID)")
     }
 
+    static func weeklyMessages(id: Int64) -> URL {
+        APIConfig.baseURL.appendingPathComponent("/api/v1/weekly/\(id)/messages")
+    }
+
     static let pomodoros = APIConfig.baseURL.appendingPathComponent("/api/v1/pomodoros")
 
     static func pomodoroComplete(id: Int64) -> URL {

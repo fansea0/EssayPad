@@ -40,12 +40,28 @@ Base URL: `http://127.0.0.1:18888`
 ## 5. 随笔详情
 - `GET /api/v1/notes/:id`
 
-## 6. AI 周报
+## 6. AI 周复盘
 - `POST /api/v1/weekly/generate`
-- req: `{ "days": 7 }`  (可选,默认 7)
+- req: `{ "preset":"week", "force":false }`
 - resp 200:
 ```json
-{ "code":0, "data":{ "summary":"...","highlights":[...],"action_items":[...],"generated_at":1718000000 } }
+{ "code":0, "data":{ "id":12,"reflection_json":"{...}","note_count":18,"created_at":1718000000 } }
+```
+
+`reflection_json` 结构：`greeting`、`one_liner`、`story`、`observations`、`growth`、`suggestions`。服务端从笔记、日记和任务的时间窗口中检索后生成。
+
+## 7. 周复盘对话
+- `GET /api/v1/weekly/:id/messages`
+- resp 200:
+```json
+{ "code":0,"data":{ "list":[{"id":1,"report_id":12,"role":1,"content":"...","created_at":1718000000}] } }
+```
+
+- `POST /api/v1/weekly/:id/messages`
+- req: `{ "content":"我下周应该先做什么？" }`
+- resp 200:
+```json
+{ "code":0,"data":{ "user_message":{...},"assistant_message":{...} } }
 ```
 
 ## 错误码

@@ -57,8 +57,12 @@ func TestWeeklyDAOFindAndSave(t *testing.T) {
 		Summary: "replaced", Highlights: []string{"c"}, ActionItems: []string{"y"},
 		NoteCount: 9, CreatedAt: time.Now().Unix(),
 	}
-	if _, err := dao.Save(r2); err != nil {
+	replacedID, err := dao.Save(r2)
+	if err != nil {
 		t.Fatalf("save replace: %v", err)
+	}
+	if replacedID != id {
+		t.Fatalf("report id changed after replacement: got %d want %d", replacedID, id)
 	}
 	got, err := dao.FindByWindow("week", 1000, 2000)
 	if err != nil {
@@ -66,5 +70,33 @@ func TestWeeklyDAOFindAndSave(t *testing.T) {
 	}
 	if got.Summary != "replaced" || got.NoteCount != 9 || len(got.Highlights) != 1 {
 		t.Fatalf("replace mismatch: %+v", got)
+	}
+}
+
+func TestWeeklyReflectionMessageDAO(t *testing.T) {
+	db, err := OpenDB(t.TempDir() + "/test.db")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	dao := NewWeeklyReflectionMessageDAO(db)
+
+	if _, err := dao.Create(&model.WeeklyReflectionMessage{
+		ReportID: 1, Role: model.WeeklyReflectionRoleUser, Content: "我该怎么调整？", CreatedAt: 10,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := dao.Create(&model.WeeklyReflectionMessage{
+		ReportID: 1, Role: model.WeeklyReflectionRoleAssistant, Content: "先完成一件重要的事。", ResponseID: "resp_1", CreatedAt: 11,
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	list, err := dao.ListByReportID(1, 12)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(list) != 2 || list[1].ResponseID != "resp_1" {
+		t.Fatalf("unexpected messages: %+v", list)
 	}
 }

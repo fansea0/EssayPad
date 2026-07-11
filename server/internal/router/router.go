@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 
@@ -21,7 +22,7 @@ func New(db *sql.DB, aic *ai.Client) *gin.Engine {
 		if c.Request.Method == "PUT" || c.Request.Method == "POST" {
 			body, _ := io.ReadAll(c.Request.Body)
 			c.Request.Body = io.NopCloser(bytes.NewBuffer(body))
-			if len(body) > 0 && len(body) < 1000 {
+			if len(body) > 0 && len(body) < 1000 && !strings.HasPrefix(c.Request.URL.Path, "/api/v1/weekly/") {
 				log.Printf("[SRV] %s %s body=%s", c.Request.Method, c.Request.URL.Path, string(body))
 			}
 		}
@@ -29,11 +30,12 @@ func New(db *sql.DB, aic *ai.Client) *gin.Engine {
 	})
 	dao := store.NewNoteDAO(db)
 	weeklyDAO := store.NewWeeklyDAO(db)
+	weeklyMessageDAO := store.NewWeeklyReflectionMessageDAO(db)
 	taskDAO := store.NewTaskDAO(db)
 	pomodoroDAO := store.NewPomodoroDAO(db)
 	diaryDAO := store.NewDiaryDAO(db)
 	noteSvc := service.NewNoteService(dao)
-	weeklySvc := service.NewWeeklyService(dao, weeklyDAO, taskDAO, aic)
+	weeklySvc := service.NewWeeklyService(dao, weeklyDAO, taskDAO, diaryDAO, weeklyMessageDAO, aic)
 	taskSvc := service.NewTaskService(taskDAO, dao, pomodoroDAO)
 	pomodoroSvc := service.NewPomodoroService(pomodoroDAO)
 	diarySvc := service.NewDiaryService(diaryDAO)
@@ -70,6 +72,8 @@ func New(db *sql.DB, aic *ai.Client) *gin.Engine {
 		v1.POST("/tasks/:id/notes", taskH.AttachNote)
 		v1.DELETE("/tasks/:id/notes/:noteId", taskH.DetachNote)
 		v1.POST("/weekly/generate", weeklyH.Generate)
+		v1.GET("/weekly/:id/messages", weeklyH.ListMessages)
+		v1.POST("/weekly/:id/messages", weeklyH.Chat)
 		v1.PUT("/ai-config", configH.Update)
 		v1.GET("/ai-config/stats", configH.Stats)
 		v1.POST("/pomodoros", pomodoroH.Create)

@@ -29,6 +29,13 @@ type TaskSummary struct {
 	Overdue   []TaskBrief `json:"overdue"`
 }
 
+type ReflectionInput struct {
+	Notes   []*model.Note
+	Diaries []*model.DiaryEntry
+	Tasks   TaskSummary
+	Days    int
+}
+
 func groupByCategory(notes []*model.Note) groupedNotes {
 	var g groupedNotes
 	for _, n := range notes {
@@ -82,6 +89,32 @@ func parseWeekly(content string) (*model.WeeklyReport, error) {
 		ActionItems: raw.ActionItems,
 		CreatedAt:   time.Now().Unix(),
 	}, nil
+}
+
+func reflectionSystemPrompt(days int) string {
+	return fmt.Sprintf("你是用户真诚、具体且不说教的周复盘伙伴。只能根据用户近 %d 天的笔记、日记与任务分析，不要编造事实。严格输出 JSON，不要 markdown 围栏。", days)
+}
+
+func buildReflectionPrompt(input ReflectionInput) string {
+	payload, _ := json.MarshalIndent(struct {
+		Notes   []*model.Note       `json:"notes"`
+		Diaries []*model.DiaryEntry `json:"diaries"`
+		Tasks   TaskSummary         `json:"tasks"`
+	}{input.Notes, input.Diaries, input.Tasks}, "", "  ")
+	return fmt.Sprintf("以下是用户近 %d 天的记录：\n%s\n\n输出 JSON：\n{\n  \"greeting\": \"简短问候\",\n  \"one_liner\": \"本周一句话\",\n  \"story\": \"本周故事\",\n  \"observations\": [\"观察，最多3条\"],\n  \"growth\": [\"成长，最多3条\"],\n  \"suggestions\": [\"建议，最多3条\"]\n}", input.Days, string(payload))
+}
+
+func parseReflection(content string) (*model.WeeklyReflection, error) {
+	content = strings.TrimSpace(strings.TrimSuffix(strings.TrimPrefix(strings.TrimPrefix(content, "```json"), "```"), "```"))
+	var reflection model.WeeklyReflection
+	if err := json.Unmarshal([]byte(content), &reflection); err != nil {
+		return nil, fmt.Errorf("parse reflection: %w", err)
+	}
+	return &reflection, nil
+}
+
+func reflectionChatSystemPrompt(reflectionJSON string) string {
+	return "你是用户的周复盘伙伴。请基于以下本周复盘继续自然对话，真诚具体，不说教，不编造事实。\n\n本周复盘：\n" + reflectionJSON
 }
 
 // FormatDueAt 把秒级时间戳格式化为 "YYYY-MM-DD"(本地时区)

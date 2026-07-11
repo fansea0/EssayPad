@@ -145,6 +145,25 @@ func (d *DiaryDAO) List(filter DiaryListFilter) ([]*model.DiaryEntry, int, error
 	return list, total, rows.Err()
 }
 
+func (d *DiaryDAO) ListInRange(start, end int64) ([]*model.DiaryEntry, error) {
+	rows, err := d.db.Query(`SELECT `+diaryColumns+` FROM diary_entries
+		WHERE user_id=0 AND is_deleted=0 AND diary_date>=? AND diary_date<?
+		ORDER BY diary_date DESC, id DESC`, start, end)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var list []*model.DiaryEntry
+	for rows.Next() {
+		entry, err := scanDiary(rows)
+		if err != nil {
+			return nil, err
+		}
+		list = append(list, entry)
+	}
+	return list, rows.Err()
+}
+
 func (d *DiaryDAO) Update(id int64, fields map[string]interface{}) (*model.DiaryEntry, error) {
 	if len(fields) == 0 {
 		return d.Get(id)
