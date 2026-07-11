@@ -112,6 +112,7 @@ func (c *Client) GenerateReflection(input ReflectionInput) (*model.WeeklyReflect
 	messages := []*schema.Message{{Role: schema.System, Content: reflectionSystemPrompt(input.Days)}, {Role: schema.User, Content: buildReflectionPrompt(input)}}
 	if arkChat != nil {
 		response, err := arkChat.Generate(context.Background(), messages, arkmodel.WithCache(&arkmodel.CacheOption{APIType: arkmodel.ResponsesAPI}))
+		recordModelCall(c.stats, response, err)
 		if err != nil {
 			return nil, "", 0, fmt.Errorf("generate reflection: %w", err)
 		}
@@ -123,6 +124,7 @@ func (c *Client) GenerateReflection(input ReflectionInput) (*model.WeeklyReflect
 		return nil, "", 0, fmt.Errorf("AI client not configured")
 	}
 	response, err := chat.Generate(context.Background(), messages)
+	recordModelCall(c.stats, response, err)
 	if err != nil {
 		return nil, "", 0, fmt.Errorf("generate reflection: %w", err)
 	}
@@ -136,6 +138,7 @@ func (c *Client) ChatReflection(reflectionJSON string, history []*model.WeeklyRe
 	c.mu.RUnlock()
 	if arkChat != nil && previousResponseID != "" {
 		response, err := arkChat.Generate(context.Background(), []*schema.Message{schema.UserMessage(content)}, arkmodel.WithCache(&arkmodel.CacheOption{APIType: arkmodel.ResponsesAPI, HeadPreviousResponseID: &previousResponseID}))
+		recordModelCall(c.stats, response, err)
 		if err == nil {
 			responseID, _ := arkmodel.GetResponseID(response)
 			return response.Content, responseID, time.Now().Add(24 * time.Hour).Unix(), nil
@@ -154,6 +157,7 @@ func (c *Client) ChatReflection(reflectionJSON string, history []*model.WeeklyRe
 	}
 	messages = append(messages, schema.UserMessage(content))
 	response, err := chat.Generate(context.Background(), messages)
+	recordModelCall(c.stats, response, err)
 	if err != nil {
 		return "", "", 0, fmt.Errorf("chat reflection: %w", err)
 	}
@@ -173,12 +177,19 @@ func (c *Client) generateWeeklyEino(input WeeklyInput) (*model.WeeklyReport, err
 		{Role: schema.User, Content: prompt},
 	})
 	if err != nil {
-		c.stats.Record(false, err.Error(), nil)
+		recordModelCall(c.stats, nil, err)
 		return nil, fmt.Errorf("llm call: %w", err)
 	}
-	usage := extractUsage(resp)
-	c.stats.Record(true, "", usage)
+	recordModelCall(c.stats, resp, nil)
 	return parseWeekly(resp.Content)
+}
+
+func recordModelCall(stats *Stats, response *schema.Message, err error) {
+	if err != nil {
+		stats.Record(false, err.Error(), nil)
+		return
+	}
+	stats.Record(true, "", extractUsage(response))
 }
 
 // extractUsage 从 eino ChatResponse 中提取 token usage(若响应里有)
