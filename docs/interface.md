@@ -48,7 +48,7 @@ Base URL: `http://127.0.0.1:18888`
 { "code":0, "data":{ "id":12,"reflection_json":"{...}","note_count":18,"created_at":1718000000 } }
 ```
 
-`reflection_json` 结构：`greeting`、`one_liner`、`story`、`observations`、`growth`、`suggestions`。服务端从笔记、日记和任务的时间窗口中检索后生成。
+`reflection_json` 结构：`greeting`、`one_liner`、`story`、`observations`、`growth`、`suggestions`、`suggested_questions`。服务端从笔记、日记和任务的时间窗口中检索后生成；为兼容历史数据，`story` 支持字符串或字符串数组。
 
 ## 7. 周复盘对话
 - `GET /api/v1/weekly/:id/messages`

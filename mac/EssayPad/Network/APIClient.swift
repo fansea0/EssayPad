@@ -231,6 +231,23 @@ actor APIClient {
         let suggestions: [String]
         let suggestedQuestions: [String]?
         enum CodingKeys: String, CodingKey { case greeting, story, observations, growth, suggestions; case oneLiner = "one_liner"; case suggestedQuestions = "suggested_questions" }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            greeting = (try? container.decode(String.self, forKey: .greeting)) ?? ""
+            oneLiner = (try? container.decode(String.self, forKey: .oneLiner)) ?? ""
+            if let value = try? container.decode(String.self, forKey: .story) {
+                story = value
+            } else if let paragraphs = try? container.decode([String].self, forKey: .story) {
+                story = paragraphs.joined(separator: "\n\n")
+            } else {
+                story = ""
+            }
+            observations = (try? container.decode([String].self, forKey: .observations)) ?? []
+            growth = (try? container.decode([String].self, forKey: .growth)) ?? []
+            suggestions = (try? container.decode([String].self, forKey: .suggestions)) ?? []
+            suggestedQuestions = try? container.decode([String].self, forKey: .suggestedQuestions)
+        }
     }
 
     struct WeeklyReflectionMessage: Decodable, Identifiable {

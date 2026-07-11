@@ -106,11 +106,29 @@ func buildReflectionPrompt(input ReflectionInput) string {
 
 func parseReflection(content string) (*model.WeeklyReflection, error) {
 	content = strings.TrimSpace(strings.TrimSuffix(strings.TrimPrefix(strings.TrimPrefix(content, "```json"), "```"), "```"))
-	var reflection model.WeeklyReflection
-	if err := json.Unmarshal([]byte(content), &reflection); err != nil {
+	var raw struct {
+		Greeting           string          `json:"greeting"`
+		OneLiner           string          `json:"one_liner"`
+		Story              json.RawMessage `json:"story"`
+		Observations       []string        `json:"observations"`
+		Growth             []string        `json:"growth"`
+		Suggestions        []string        `json:"suggestions"`
+		SuggestedQuestions []string        `json:"suggested_questions"`
+	}
+	if err := json.Unmarshal([]byte(content), &raw); err != nil {
 		return nil, fmt.Errorf("parse reflection: %w", err)
 	}
-	return &reflection, nil
+	var story string
+	if err := json.Unmarshal(raw.Story, &story); err != nil {
+		var paragraphs []string
+		if arrayErr := json.Unmarshal(raw.Story, &paragraphs); arrayErr != nil {
+			return nil, fmt.Errorf("parse reflection story: %w", err)
+		}
+		story = strings.Join(paragraphs, "\n\n")
+	}
+	return &model.WeeklyReflection{Greeting: raw.Greeting, OneLiner: raw.OneLiner, Story: story,
+		Observations: raw.Observations, Growth: raw.Growth, Suggestions: raw.Suggestions,
+		SuggestedQuestions: raw.SuggestedQuestions}, nil
 }
 
 func reflectionChatSystemPrompt(reflectionJSON string) string {
