@@ -236,6 +236,7 @@ final class MarkdownTextView: NSTextView {
 
 struct MarkdownStyledEditor: NSViewRepresentable {
     var text: String
+    var focusOnAppear = false
     var onTextChange: (String) -> Void
 
     func makeNSView(context: Context) -> NSScrollView {
@@ -302,6 +303,12 @@ struct MarkdownStyledEditor: NSViewRepresentable {
             context.coordinator.isUpdatingFromSwiftUI = false
             applyMarkdownStyles(to: textView)
         }
+        if focusOnAppear && !context.coordinator.didRequestFocus {
+            context.coordinator.didRequestFocus = true
+            DispatchQueue.main.async {
+                textView.window?.makeFirstResponder(textView)
+            }
+        }
     }
 
     func makeCoordinator() -> Coordinator {
@@ -311,6 +318,7 @@ struct MarkdownStyledEditor: NSViewRepresentable {
     final class Coordinator: NSObject, NSTextViewDelegate {
         var onTextChange: (String) -> Void
         var isUpdatingFromSwiftUI = false
+        var didRequestFocus = false
         private var pendingFormat: DispatchWorkItem?
 
         init(onTextChange: @escaping (String) -> Void) {

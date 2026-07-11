@@ -119,22 +119,14 @@ struct QuickCaptureView: View {
     }
 
     private var contentEditor: some View {
-        ZStack(alignment: .topLeading) {
-            RoundedRectangle(cornerRadius: 6)
-                .fill(Color(nsColor: .textBackgroundColor))
-            if content.isEmpty {
-                Text("记点什么…")
-                    .foregroundColor(.secondary)
-                    .font(.system(size: 13))
-                    .padding(10)
-                    .allowsHitTesting(false)
+        MarkdownStyledEditor(
+            text: content,
+            focusOnAppear: editingNote != nil,
+            onTextChange: { newValue in
+                if content != newValue { content = newValue }
             }
-            TextEditor(text: $content)
-                .font(.system(size: 13))
-                .scrollContentBackground(.hidden)
-                .padding(6)
-                .focused($focusedField, equals: .content)
-        }
+        )
+        .background(Color(nsColor: .textBackgroundColor), in: RoundedRectangle(cornerRadius: 6))
         .frame(minHeight: 100)
     }
 

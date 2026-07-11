@@ -3,7 +3,7 @@ import SwiftUI
 
 final class FloatingPanel<Content: View>: NSPanel {
     init(contentRect: NSRect, content: () -> Content) {
-        super.init(contentRect: contentRect, styleMask: [.titled, .resizable, .closable, .utilityWindow, .nonactivatingPanel], backing: .buffered, defer: false)
+        super.init(contentRect: contentRect, styleMask: [.titled, .resizable, .closable, .utilityWindow], backing: .buffered, defer: false)
         self.isFloatingPanel = true
         self.level = .floating
         self.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
@@ -48,12 +48,8 @@ final class QuickCaptureWindowController {
         let p = FloatingPanel(contentRect: NSRect(x: 0, y: 0, width: 480, height: 320),
                               content: { AnyView(view) })
         p.center()
+        NSApp.activate(ignoringOtherApps: true)
         p.makeKeyAndOrderFront(nil)
-        if let cv = p.contentView {
-            DispatchQueue.main.async {
-                p.makeFirstResponder(cv)
-            }
-        }
         self.panel = p
     }
 }
