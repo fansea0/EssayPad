@@ -257,6 +257,14 @@ actor APIClient {
         let content: String
         let createdAt: Int64
         enum CodingKeys: String, CodingKey { case id, role, content; case reportID = "report_id"; case createdAt = "created_at" }
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            id = (try? container.decode(Int64.self, forKey: .id)) ?? 0
+            reportID = (try? container.decode(Int64.self, forKey: .reportID)) ?? 0
+            role = (try? container.decode(Int.self, forKey: .role)) ?? 0
+            content = (try? container.decode(String.self, forKey: .content)) ?? ""
+            createdAt = (try? container.decode(Int64.self, forKey: .createdAt)) ?? 0
+        }
         var isAssistant: Bool { role == 1 }
     }
 

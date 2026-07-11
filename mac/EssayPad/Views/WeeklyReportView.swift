@@ -70,7 +70,25 @@ struct WeeklyReportView: View {
     }
 
     private var emptyState: some View { VStack(spacing: 12) { Image(systemName: "sparkles").font(.system(size: 44)).foregroundStyle(.tertiary); Text("准备好和这一周聊聊了吗？").font(.headline); Button("生成本周复盘") { Task { await generate() } }.buttonStyle(.borderedProminent) }.frame(maxWidth: .infinity, minHeight: 300) }
-    private func generate(force: Bool = false) async { loading = true; messages = []; streamingText = ""; defer { loading = false }; do { let value = try await APIClient.shared.generateWeekly(preset: selectedPreset, force: force); report = value; messages = try await APIClient.shared.listWeeklyMessages(reportID: value.id); error = nil } catch let requestError { error = (requestError as? APIError)?.errorDescription ?? requestError.localizedDescription } }
+    private func generate(force: Bool = false) async {
+        loading = true
+        messages = []
+        streamingText = ""
+        defer { loading = false }
+        do {
+            let value = try await APIClient.shared.generateWeekly(preset: selectedPreset, force: force)
+            report = value
+            error = nil
+            do {
+                messages = try await APIClient.shared.listWeeklyMessages(reportID: value.id)
+            } catch {
+                NSLog("[ES] load weekly messages failed: report_id=\(value.id), error=\(error.localizedDescription)")
+                messages = []
+            }
+        } catch let requestError {
+            error = (requestError as? APIError)?.errorDescription ?? requestError.localizedDescription
+        }
+    }
     private func send() async { guard let report else { return }; let text = input.trimmingCharacters(in: .whitespacesAndNewlines); guard !text.isEmpty else { return }; sending = true; defer { sending = false }; do { let pair = try await APIClient.shared.sendWeeklyMessage(reportID: report.id, content: text); messages.append(pair.0); input = ""; streamingText = ""; for character in pair.1.content { streamingText.append(character); try? await Task.sleep(nanoseconds: 42_000_000) }; messages.append(pair.1); streamingText = "" } catch let requestError { error = (requestError as? APIError)?.errorDescription ?? requestError.localizedDescription } }
     private func clearMessages() async { guard let report else { return }; do { try await APIClient.shared.deleteWeeklyMessages(reportID: report.id); messages = [] } catch let requestError { error = (requestError as? APIError)?.errorDescription ?? requestError.localizedDescription } }
     private var rangeDescription: String { selectedPreset == .week ? "最近 7 天的本地记录" : selectedPreset == .today ? "今天的本地记录" : "昨天的本地记录" }
