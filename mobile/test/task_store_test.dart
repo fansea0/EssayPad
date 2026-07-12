@@ -9,7 +9,7 @@ void main() {
       () async {
     SharedPreferences.setMockInitialValues({});
     final now = DateTime.now();
-    final store = TaskStore(seed: [
+    final store = TaskStore(persistent: false, seed: [
       MobileTask(
         id: 'task-1',
         title: '完成移动端任务页',

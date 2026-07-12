@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:path/path.dart' as path;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite/sqflite.dart';
 
 const _ink = Color(0xFF1D2A35);
 const _mint = Color(0xFF157A6E);
@@ -271,16 +274,75 @@ class MobileTask {
       focusMinutes: json['focusMinutes'] as int);
 }
 
+class MobileDatabase {
+  MobileDatabase._();
+  static final instance = MobileDatabase._();
+  Database? _database;
+
+  Future<Database> get database async {
+    if (_database != null) return _database!;
+    final directory = await getDatabasesPath();
+    _database = await openDatabase(path.join(directory, 'essaypad_mobile.db'),
+        version: 1, onCreate: (db, _) async {
+      await db.execute(
+          'CREATE TABLE notes (id TEXT PRIMARY KEY, title TEXT NOT NULL, content TEXT NOT NULL, category TEXT NOT NULL, updated_at INTEGER NOT NULL)');
+      await db.execute(
+          'CREATE TABLE diaries (id TEXT PRIMARY KEY, title TEXT NOT NULL, content TEXT NOT NULL, mood TEXT NOT NULL, activity TEXT NOT NULL, created_at INTEGER NOT NULL)');
+      await db.execute(
+          'CREATE TABLE tasks (id TEXT PRIMARY KEY, title TEXT NOT NULL, description TEXT NOT NULL, progress INTEGER NOT NULL, priority TEXT NOT NULL, status TEXT NOT NULL, due_at INTEGER NOT NULL, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL, focus_minutes INTEGER NOT NULL)');
+    });
+    return _database!;
+  }
+
+  Future<List<Map<String, Object?>>> query(String table) async =>
+      (await database).query(table);
+  Future<void> upsert(String table, Map<String, Object?> values) async =>
+      (await database)
+          .insert(table, values, conflictAlgorithm: ConflictAlgorithm.replace);
+  Future<void> replaceAll(
+      String table, List<Map<String, Object?>> values) async {
+    final db = await database;
+    await db.transaction((transaction) async {
+      await transaction.delete(table);
+      final batch = transaction.batch();
+      for (final value in values) {
+        batch.insert(table, value);
+      }
+      await batch.commit(noResult: true);
+    });
+  }
+}
+
 class NotesStore extends ChangeNotifier {
   static const _storageKey = 'essaypad.mobile.notes.v1';
-  NotesStore({List<MobileNote>? seed}) : _notes = List.of(seed ?? const []);
+  NotesStore({List<MobileNote>? seed, bool persistent = true})
+      : _notes = List.of(seed ?? const []),
+        _persistent = persistent;
 
   final List<MobileNote> _notes;
+  final bool _persistent;
   List<MobileNote> get notes => List.unmodifiable(
       _notes..sort((a, b) => b.updatedAt.compareTo(a.updatedAt)));
 
   Future<void> load() async {
+    if (!_persistent) return;
     final preferences = await SharedPreferences.getInstance();
+    if (!kIsWeb) {
+      final rows = await MobileDatabase.instance.query('notes');
+      if (rows.isNotEmpty) {
+        _notes
+          ..clear()
+          ..addAll(rows.map((row) => MobileNote(
+              id: row['id']! as String,
+              title: row['title']! as String,
+              content: row['content']! as String,
+              category: NoteCategory.values.byName(row['category']! as String),
+              updatedAt: DateTime.fromMillisecondsSinceEpoch(
+                  row['updated_at']! as int))));
+        notifyListeners();
+        return;
+      }
+    }
     final raw = preferences.getString(_storageKey);
     if (raw == null) {
       if (_notes.isEmpty) {
@@ -314,6 +376,21 @@ class NotesStore extends ChangeNotifier {
   }
 
   Future<void> _persist() async {
+    if (!_persistent) return;
+    if (!kIsWeb) {
+      await MobileDatabase.instance.replaceAll(
+          'notes',
+          _notes
+              .map((note) => {
+                    'id': note.id,
+                    'title': note.title,
+                    'content': note.content,
+                    'category': note.category.name,
+                    'updated_at': note.updatedAt.millisecondsSinceEpoch
+                  })
+              .toList());
+      return;
+    }
     final preferences = await SharedPreferences.getInstance();
     await preferences.setString(
         _storageKey, jsonEncode(_notes.map((note) => note.toJson()).toList()));
@@ -340,8 +417,11 @@ class NotesStore extends ChangeNotifier {
 
 class TaskStore extends ChangeNotifier {
   static const _storageKey = 'essaypad.mobile.tasks.v1';
-  TaskStore({List<MobileTask>? seed}) : _tasks = List.of(seed ?? const []);
+  TaskStore({List<MobileTask>? seed, bool persistent = true})
+      : _tasks = List.of(seed ?? const []),
+        _persistent = persistent;
   final List<MobileTask> _tasks;
+  final bool _persistent;
 
   List<MobileTask> get tasks {
     final result = List<MobileTask>.of(_tasks);
@@ -350,7 +430,30 @@ class TaskStore extends ChangeNotifier {
   }
 
   Future<void> load() async {
+    if (!_persistent) return;
     final preferences = await SharedPreferences.getInstance();
+    if (!kIsWeb) {
+      final rows = await MobileDatabase.instance.query('tasks');
+      if (rows.isNotEmpty) {
+        _tasks
+          ..clear()
+          ..addAll(rows.map((row) => MobileTask(
+              id: row['id']! as String,
+              title: row['title']! as String,
+              description: row['description']! as String,
+              progress: row['progress']! as int,
+              priority: TaskPriority.values.byName(row['priority']! as String),
+              status: TaskStatus.values.byName(row['status']! as String),
+              dueAt: DateTime.fromMillisecondsSinceEpoch(row['due_at']! as int),
+              createdAt: DateTime.fromMillisecondsSinceEpoch(
+                  row['created_at']! as int),
+              updatedAt: DateTime.fromMillisecondsSinceEpoch(
+                  row['updated_at']! as int),
+              focusMinutes: row['focus_minutes']! as int)));
+        notifyListeners();
+        return;
+      }
+    }
     final raw = preferences.getString(_storageKey);
     if (raw == null) {
       if (_tasks.isEmpty) {
@@ -400,6 +503,26 @@ class TaskStore extends ChangeNotifier {
   }
 
   Future<void> _persist() async {
+    if (!_persistent) return;
+    if (!kIsWeb) {
+      await MobileDatabase.instance.replaceAll(
+          'tasks',
+          _tasks
+              .map((task) => {
+                    'id': task.id,
+                    'title': task.title,
+                    'description': task.description,
+                    'progress': task.progress,
+                    'priority': task.priority.name,
+                    'status': task.status.name,
+                    'due_at': task.dueAt.millisecondsSinceEpoch,
+                    'created_at': task.createdAt.millisecondsSinceEpoch,
+                    'updated_at': task.updatedAt.millisecondsSinceEpoch,
+                    'focus_minutes': task.focusMinutes
+                  })
+              .toList());
+      return;
+    }
     final preferences = await SharedPreferences.getInstance();
     await preferences.setString(
         _storageKey, jsonEncode(_tasks.map((task) => task.toJson()).toList()));
@@ -447,9 +570,12 @@ class TaskStore extends ChangeNotifier {
 
 class DiaryStore extends ChangeNotifier {
   static const _storageKey = 'essaypad.mobile.diaries.v1';
-  DiaryStore({List<MobileDiary>? seed}) : _diaries = List.of(seed ?? const []);
+  DiaryStore({List<MobileDiary>? seed, bool persistent = true})
+      : _diaries = List.of(seed ?? const []),
+        _persistent = persistent;
 
   final List<MobileDiary> _diaries;
+  final bool _persistent;
 
   List<MobileDiary> get diaries {
     final sorted = List<MobileDiary>.of(_diaries);
@@ -458,7 +584,25 @@ class DiaryStore extends ChangeNotifier {
   }
 
   Future<void> load() async {
+    if (!_persistent) return;
     final preferences = await SharedPreferences.getInstance();
+    if (!kIsWeb) {
+      final rows = await MobileDatabase.instance.query('diaries');
+      if (rows.isNotEmpty) {
+        _diaries
+          ..clear()
+          ..addAll(rows.map((row) => MobileDiary(
+              id: row['id']! as String,
+              title: row['title']! as String,
+              content: row['content']! as String,
+              mood: DiaryMood.values.byName(row['mood']! as String),
+              activity: DiaryActivity.values.byName(row['activity']! as String),
+              createdAt: DateTime.fromMillisecondsSinceEpoch(
+                  row['created_at']! as int))));
+        notifyListeners();
+        return;
+      }
+    }
     final raw = preferences.getString(_storageKey);
     if (raw == null) {
       if (_diaries.isEmpty) {
@@ -486,6 +630,22 @@ class DiaryStore extends ChangeNotifier {
   }
 
   Future<void> _persist() async {
+    if (!_persistent) return;
+    if (!kIsWeb) {
+      await MobileDatabase.instance.replaceAll(
+          'diaries',
+          _diaries
+              .map((diary) => {
+                    'id': diary.id,
+                    'title': diary.title,
+                    'content': diary.content,
+                    'mood': diary.mood.name,
+                    'activity': diary.activity.name,
+                    'created_at': diary.createdAt.millisecondsSinceEpoch
+                  })
+              .toList());
+      return;
+    }
     final preferences = await SharedPreferences.getInstance();
     await preferences.setString(_storageKey,
         jsonEncode(_diaries.map((diary) => diary.toJson()).toList()));
