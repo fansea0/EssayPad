@@ -8,7 +8,10 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
-    await tester.pumpWidget(EssayPadMobile(store: NotesStore(seed: const [])));
+    await tester.pumpWidget(EssayPadMobile(
+      store: NotesStore(seed: const []),
+      diaryStore: DiaryStore(seed: const []),
+    ));
 
     expect(find.text('笔记'), findsOneWidget);
     expect(find.text('日记'), findsAtLeastNWidgets(1));

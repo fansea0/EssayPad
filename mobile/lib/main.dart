@@ -12,14 +12,21 @@ const _canvas = Color(0xFFF6F7F5);
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final store = NotesStore();
+  final diaryStore = DiaryStore();
   await store.load();
-  runApp(EssayPadMobile(store: store));
+  await diaryStore.load();
+  runApp(EssayPadMobile(store: store, diaryStore: diaryStore));
 }
 
 class EssayPadMobile extends StatelessWidget {
-  const EssayPadMobile({super.key, required this.store});
+  const EssayPadMobile({
+    super.key,
+    required this.store,
+    required this.diaryStore,
+  });
 
   final NotesStore store;
+  final DiaryStore diaryStore;
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +40,7 @@ class EssayPadMobile extends StatelessWidget {
         appBarTheme:
             const AppBarTheme(backgroundColor: _canvas, foregroundColor: _ink),
       ),
-      home: MobileShell(store: store),
+      home: MobileShell(store: store, diaryStore: diaryStore),
     );
   }
 }
@@ -93,6 +100,68 @@ class MobileNote {
       content: json['content'] as String,
       category: NoteCategory.values.byName(json['category'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
+    );
+  }
+}
+
+enum DiaryMood {
+  joyful('愉快', Icons.sentiment_very_satisfied_outlined, Color(0xFFFFA83D)),
+  calm('平静', Icons.sentiment_satisfied_outlined, Color(0xFF57A7E9)),
+  tired('疲惫', Icons.sentiment_neutral_outlined, Color(0xFF8D97A8)),
+  low('低落', Icons.sentiment_dissatisfied_outlined, Color(0xFF7A79B8));
+
+  const DiaryMood(this.label, this.icon, this.color);
+  final String label;
+  final IconData icon;
+  final Color color;
+}
+
+enum DiaryActivity {
+  work('工作', Icons.work_outline),
+  study('学习', Icons.auto_stories_outlined),
+  outing('出游', Icons.luggage_outlined),
+  rest('休息', Icons.weekend_outlined),
+  game('游戏', Icons.sports_esports_outlined);
+
+  const DiaryActivity(this.label, this.icon);
+  final String label;
+  final IconData icon;
+}
+
+class MobileDiary {
+  const MobileDiary({
+    required this.id,
+    required this.title,
+    required this.content,
+    required this.mood,
+    required this.activity,
+    required this.createdAt,
+  });
+
+  final String id;
+  final String title;
+  final String content;
+  final DiaryMood mood;
+  final DiaryActivity activity;
+  final DateTime createdAt;
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'content': content,
+        'mood': mood.name,
+        'activity': activity.name,
+        'createdAt': createdAt.toIso8601String(),
+      };
+
+  factory MobileDiary.fromJson(Map<String, dynamic> json) {
+    return MobileDiary(
+      id: json['id'] as String,
+      title: json['title'] as String,
+      content: json['content'] as String,
+      mood: DiaryMood.values.byName(json['mood'] as String),
+      activity: DiaryActivity.values.byName(json['activity'] as String),
+      createdAt: DateTime.parse(json['createdAt'] as String),
     );
   }
 }
@@ -164,9 +233,79 @@ class NotesStore extends ChangeNotifier {
   }
 }
 
+class DiaryStore extends ChangeNotifier {
+  static const _storageKey = 'essaypad.mobile.diaries.v1';
+  DiaryStore({List<MobileDiary>? seed}) : _diaries = List.of(seed ?? const []);
+
+  final List<MobileDiary> _diaries;
+
+  List<MobileDiary> get diaries {
+    final sorted = List<MobileDiary>.of(_diaries);
+    sorted.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return List.unmodifiable(sorted);
+  }
+
+  Future<void> load() async {
+    final preferences = await SharedPreferences.getInstance();
+    final raw = preferences.getString(_storageKey);
+    if (raw == null) {
+      if (_diaries.isEmpty) {
+        _diaries.addAll(_seedDiaries());
+        await _persist();
+      }
+      return;
+    }
+    _diaries
+      ..clear()
+      ..addAll((jsonDecode(raw) as List<dynamic>)
+          .map((item) => MobileDiary.fromJson(item as Map<String, dynamic>)));
+    notifyListeners();
+  }
+
+  Future<void> save(MobileDiary diary) async {
+    final index = _diaries.indexWhere((item) => item.id == diary.id);
+    if (index == -1) {
+      _diaries.add(diary);
+    } else {
+      _diaries[index] = diary;
+    }
+    await _persist();
+    notifyListeners();
+  }
+
+  Future<void> _persist() async {
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setString(_storageKey,
+        jsonEncode(_diaries.map((diary) => diary.toJson()).toList()));
+  }
+
+  static List<MobileDiary> _seedDiaries() {
+    final now = DateTime.now();
+    return [
+      MobileDiary(
+        id: 'seed-diary-today',
+        title: '热爱可抵岁月漫长',
+        content: '今天是充实的一天。完成了几个重要功能，也把脑海里的想法慢慢落成了页面。',
+        mood: DiaryMood.joyful,
+        activity: DiaryActivity.work,
+        createdAt: now.subtract(const Duration(hours: 2)),
+      ),
+      MobileDiary(
+        id: 'seed-diary-yesterday',
+        title: '专注创造价值',
+        content: '专注是最稀缺的能力，也是最有复利的投资。给自己留一点安静的时间。',
+        mood: DiaryMood.calm,
+        activity: DiaryActivity.study,
+        createdAt: now.subtract(const Duration(days: 1, hours: 1)),
+      ),
+    ];
+  }
+}
+
 class MobileShell extends StatefulWidget {
-  const MobileShell({super.key, required this.store});
+  const MobileShell({super.key, required this.store, required this.diaryStore});
   final NotesStore store;
+  final DiaryStore diaryStore;
 
   @override
   State<MobileShell> createState() => _MobileShellState();
@@ -178,7 +317,7 @@ class _MobileShellState extends State<MobileShell> {
   @override
   Widget build(BuildContext context) {
     final page = switch (_index) {
-      0 => HomePage(store: widget.store),
+      0 => HomePage(store: widget.store, diaryStore: widget.diaryStore),
       1 => const PlaceholderPage(
           icon: Icons.check_circle_outline,
           title: '任务',
@@ -234,8 +373,15 @@ class _MobileShellState extends State<MobileShell> {
                   backgroundColor: Color(0x22E56B4F),
                   child: Icon(Icons.menu_book_outlined, color: _coral)),
               title: const Text('写日记'),
-              subtitle: const Text('日记功能会在下一阶段接入'),
-              onTap: () => Navigator.pop(context),
+              subtitle: const Text('记下今天的感受和经历'),
+              onTap: () async {
+                Navigator.pop(context);
+                await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) =>
+                            DiaryEditorPage(diaryStore: widget.diaryStore)));
+              },
             ),
           ]),
         ),
@@ -244,16 +390,25 @@ class _MobileShellState extends State<MobileShell> {
   }
 }
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key, required this.store});
+class HomePage extends StatefulWidget {
+  const HomePage({super.key, required this.store, required this.diaryStore});
   final NotesStore store;
+  final DiaryStore diaryStore;
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  var _showDiaries = false;
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: store,
+    return AnimatedBuilder(
+      animation: Listenable.merge([widget.store, widget.diaryStore]),
       builder: (context, _) {
-        final notes = store.notes;
+        final notes = widget.store.notes;
+        final diaries = widget.diaryStore.diaries;
         return ListView(
           padding: const EdgeInsets.fromLTRB(20, 18, 20, 108),
           children: [
@@ -264,20 +419,23 @@ class HomePage extends StatelessWidget {
             const _TodayOverview(),
             const SizedBox(height: 28),
             Row(children: [
-              const Text('笔记',
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF6054DD))),
-              const SizedBox(width: 34),
-              const Text('日记',
-                  style: TextStyle(fontSize: 18, color: Color(0xFF74808D))),
+              _HomeFeedTab(
+                  label: '笔记',
+                  selected: !_showDiaries,
+                  onTap: () => setState(() => _showDiaries = false)),
+              const SizedBox(width: 28),
+              _HomeFeedTab(
+                  label: '日记',
+                  selected: _showDiaries,
+                  onTap: () => setState(() => _showDiaries = true)),
               const Spacer(),
               TextButton.icon(
                   onPressed: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (_) => NotesPage(store: store))),
+                          builder: (_) => _showDiaries
+                              ? DiaryListPage(diaryStore: widget.diaryStore)
+                              : NotesPage(store: widget.store))),
                   iconAlignment: IconAlignment.end,
                   icon: const Icon(Icons.chevron_right, size: 18),
                   label: const Text('更多')),
@@ -290,33 +448,28 @@ class HomePage extends StatelessWidget {
               mainAxisSpacing: 12,
               crossAxisSpacing: 12,
               childAspectRatio: .55,
-              children: [
-                ...notes.take(2).map((note) => _FeedCard(
-                    note: note,
-                    onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) =>
-                                NoteEditorPage(store: store, note: note))))),
-                const _DiaryPreviewCard(
-                  title: '热爱可抵岁月漫长',
-                  content: '今天是充实的一天，完成了几个重要的功能，也学到了新的知识…',
-                  time: '今天 22:45',
-                  imageUrls: [
-                    'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?w=400',
-                    'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=400',
-                    'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400'
-                  ],
-                ),
-                const _DiaryPreviewCard(
-                  title: '专注创造价值',
-                  content: '专注是最稀缺的能力，也是最有复利的投资。',
-                  time: '昨天 21:30',
-                  imageUrls: [
-                    'https://images.unsplash.com/photo-1448375240586-882707db888b?w=800'
-                  ],
-                ),
-              ],
+              children: _showDiaries
+                  ? diaries
+                      .take(4)
+                      .map((diary) => _DiaryFeedCard(
+                          diary: diary,
+                          onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => DiaryEditorPage(
+                                      diaryStore: widget.diaryStore,
+                                      diary: diary)))))
+                      .toList()
+                  : notes
+                      .take(4)
+                      .map((note) => _FeedCard(
+                          note: note,
+                          onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => NoteEditorPage(
+                                      store: widget.store, note: note)))))
+                      .toList(),
             ),
           ],
         );
@@ -681,91 +834,80 @@ class _FeedCard extends StatelessWidget {
           ])));
 }
 
-class _DiaryPreviewCard extends StatelessWidget {
-  const _DiaryPreviewCard(
-      {required this.title,
-      required this.content,
-      required this.time,
-      required this.imageUrls});
-  final String title;
-  final String content;
-  final String time;
-  final List<String> imageUrls;
+class _HomeFeedTab extends StatelessWidget {
+  const _HomeFeedTab(
+      {required this.label, required this.selected, required this.onTap});
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => Container(
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(17),
-          boxShadow: const [
-            BoxShadow(
-                color: Color(0x0E1D2A35), blurRadius: 14, offset: Offset(0, 8))
-          ]),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Row(children: [
-          Icon(Icons.menu_book_outlined, size: 18, color: Color(0xFF48BC87)),
-          SizedBox(width: 6),
-          Text('日记', style: TextStyle(fontSize: 12, color: Color(0xFF48BC87))),
-          Spacer(),
-          Icon(Icons.push_pin_outlined, size: 18, color: Color(0xFFB4BAC6))
-        ]),
-        const SizedBox(height: 12),
-        Text(title,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-                fontSize: 17,
-                height: 1.25,
-                fontWeight: FontWeight.w700,
-                color: _ink)),
-        const SizedBox(height: 8),
-        Text(content,
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-                fontSize: 13, height: 1.5, color: Color(0xFF6F7988))),
-        const Spacer(),
-        if (imageUrls.length == 1)
-          _Photo(url: imageUrls.first, width: double.infinity)
-        else
-          Row(
-              children: imageUrls
-                  .map((url) => Expanded(
-                      child: Padding(
-                          padding: const EdgeInsets.only(right: 5),
-                          child: _Photo(url: url, width: double.infinity))))
-                  .toList()),
-        const SizedBox(height: 9),
-        Text(time,
-            style: const TextStyle(fontSize: 11, color: Color(0xFFABB2BE))),
-      ]));
+  Widget build(BuildContext context) => InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(6),
+      child: Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Text(label,
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
+                  color: selected
+                      ? const Color(0xFF6054DD)
+                      : const Color(0xFF74808D)))));
 }
 
-class _Photo extends StatelessWidget {
-  const _Photo({required this.url, required this.width});
-  final String url;
-  final double width;
+class _DiaryFeedCard extends StatelessWidget {
+  const _DiaryFeedCard({required this.diary, required this.onTap});
+
+  final MobileDiary diary;
+  final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
-      child: Image.network(
-        url,
-        width: width,
-        height: 76,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => Container(
-          width: width,
-          height: 76,
-          decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                  colors: [Color(0xFFD4D9D5), Color(0xFFF2F1ED)])),
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(17),
+      child: Ink(
+          padding: const EdgeInsets.all(15),
+          decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(17),
+              boxShadow: const [
+                BoxShadow(
+                    color: Color(0x0E1D2A35),
+                    blurRadius: 14,
+                    offset: Offset(0, 8))
+              ]),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              Icon(diary.activity.icon, size: 18, color: _mint),
+              const SizedBox(width: 6),
+              Text('日记',
+                  style:
+                      const TextStyle(fontSize: 12, color: Color(0xFF48BC87))),
+              const Spacer(),
+              Icon(diary.mood.icon, size: 19, color: diary.mood.color),
+            ]),
+            const SizedBox(height: 12),
+            Text(diary.title.isEmpty ? '今天的记录' : diary.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    fontSize: 17,
+                    height: 1.25,
+                    fontWeight: FontWeight.w700,
+                    color: _ink)),
+            const SizedBox(height: 8),
+            Text(diary.content.replaceAll('\n', ' ').trim(),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    fontSize: 13, height: 1.5, color: Color(0xFF6F7988))),
+            const Spacer(),
+            Text(_diaryTimeLabel(diary.createdAt),
+                style: const TextStyle(fontSize: 11, color: Color(0xFFABB2BE))),
+          ])));
 }
 
 class _MobileBottomNav extends StatelessWidget {
@@ -922,6 +1064,321 @@ class _NavItem extends StatelessWidget {
       ),
     );
   }
+}
+
+class DiaryListPage extends StatelessWidget {
+  const DiaryListPage({super.key, required this.diaryStore});
+
+  final DiaryStore diaryStore;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: diaryStore,
+      builder: (context, _) {
+        final groups = <String, List<MobileDiary>>{};
+        for (final diary in diaryStore.diaries) {
+          groups
+              .putIfAbsent(_diaryDayLabel(diary.createdAt), () => [])
+              .add(diary);
+        }
+        return Scaffold(
+          backgroundColor: _canvas,
+          appBar: AppBar(
+            title:
+                const Text('日记', style: TextStyle(fontWeight: FontWeight.w700)),
+            actions: [
+              IconButton(
+                  onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) =>
+                              DiaryEditorPage(diaryStore: diaryStore))),
+                  icon: const Icon(Icons.add),
+                  tooltip: '写日记'),
+            ],
+          ),
+          body: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+            children: [
+              Text('把今天留给自己',
+                  style: TextStyle(
+                      fontSize: 14,
+                      color: const Color(0xFF687387).withValues(alpha: .9))),
+              const SizedBox(height: 20),
+              ...groups.entries.expand((entry) => [
+                    _DiaryDateHeader(
+                        label: entry.key, count: entry.value.length),
+                    const SizedBox(height: 10),
+                    ...entry.value.map((diary) => Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: DiaryRow(
+                            diary: diary,
+                            onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => DiaryEditorPage(
+                                        diaryStore: diaryStore,
+                                        diary: diary))))))
+                  ]),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _DiaryDateHeader extends StatelessWidget {
+  const _DiaryDateHeader({required this.label, required this.count});
+
+  final String label;
+  final int count;
+
+  @override
+  Widget build(BuildContext context) => Row(children: [
+        Text(label,
+            style: const TextStyle(
+                fontSize: 18, fontWeight: FontWeight.w700, color: _ink)),
+        const SizedBox(width: 7),
+        Text('$count 篇',
+            style: const TextStyle(fontSize: 12, color: Color(0xFF939CA9))),
+      ]);
+}
+
+class DiaryRow extends StatelessWidget {
+  const DiaryRow({super.key, required this.diary, required this.onTap});
+
+  final MobileDiary diary;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final preview = diary.content.replaceAll('\n', ' ').trim();
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(15, 14, 12, 14),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                  color: diary.mood.color.withValues(alpha: .12),
+                  borderRadius: BorderRadius.circular(11)),
+              child: Icon(diary.mood.icon, color: diary.mood.color, size: 22),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                  Text(diary.title.isEmpty ? '今天的记录' : diary.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: _ink)),
+                  const SizedBox(height: 5),
+                  Text(preview.isEmpty ? '还没有写下内容' : preview,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          fontSize: 13,
+                          height: 1.45,
+                          color: Color(0xFF747E8D))),
+                  const SizedBox(height: 10),
+                  Row(children: [
+                    _DiaryTag(label: diary.mood.label, color: diary.mood.color),
+                    const SizedBox(width: 6),
+                    _DiaryTag(label: diary.activity.label, color: _mint),
+                    const Spacer(),
+                    Text(_diaryTimeLabel(diary.createdAt),
+                        style: const TextStyle(
+                            fontSize: 11, color: Color(0xFFA1A9B5))),
+                  ]),
+                ])),
+            const SizedBox(width: 4),
+            const Icon(Icons.chevron_right, color: Color(0xFFB4BBC6)),
+          ]),
+        ),
+      ),
+    );
+  }
+}
+
+class _DiaryTag extends StatelessWidget {
+  const _DiaryTag({required this.label, required this.color});
+
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+          color: color.withValues(alpha: .1),
+          borderRadius: BorderRadius.circular(5)),
+      child: Text(label, style: TextStyle(fontSize: 11, color: color)));
+}
+
+class DiaryEditorPage extends StatefulWidget {
+  const DiaryEditorPage({super.key, required this.diaryStore, this.diary});
+
+  final DiaryStore diaryStore;
+  final MobileDiary? diary;
+
+  @override
+  State<DiaryEditorPage> createState() => _DiaryEditorPageState();
+}
+
+class _DiaryEditorPageState extends State<DiaryEditorPage> {
+  late final TextEditingController _title;
+  late final TextEditingController _content;
+  late final FocusNode _contentFocus;
+  late DiaryMood _mood;
+  late DiaryActivity _activity;
+  var _preview = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _title = TextEditingController(text: widget.diary?.title ?? '');
+    _content = TextEditingController(text: widget.diary?.content ?? '');
+    _contentFocus = FocusNode();
+    _mood = widget.diary?.mood ?? DiaryMood.calm;
+    _activity = widget.diary?.activity ?? DiaryActivity.work;
+  }
+
+  @override
+  void dispose() {
+    _title.dispose();
+    _content.dispose();
+    _contentFocus.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          leading: IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.arrow_back)),
+          actions: [
+            IconButton(
+                onPressed: () => setState(() => _preview = !_preview),
+                icon: Icon(
+                    _preview ? Icons.edit_outlined : Icons.visibility_outlined),
+                tooltip: _preview ? '继续编辑' : '预览 Markdown'),
+            TextButton(onPressed: _save, child: const Text('完成')),
+          ],
+        ),
+        body: Column(children: [
+          Padding(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 10),
+              child: TextField(
+                  controller: _title,
+                  style: const TextStyle(
+                      fontSize: 25, fontWeight: FontWeight.w700, color: _ink),
+                  decoration: const InputDecoration(
+                      hintText: '今天想记下什么？', border: InputBorder.none))),
+          SizedBox(
+              height: 40,
+              child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  children: [
+                    ...DiaryMood.values.map((mood) => Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ChoiceChip(
+                            avatar:
+                                Icon(mood.icon, size: 16, color: mood.color),
+                            label: Text(mood.label),
+                            selected: _mood == mood,
+                            selectedColor: mood.color.withValues(alpha: .15),
+                            onSelected: (_) => setState(() => _mood = mood)))),
+                    ...DiaryActivity.values.map((activity) => Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ChoiceChip(
+                            label: Text(activity.label),
+                            selected: _activity == activity,
+                            selectedColor: _mint.withValues(alpha: .13),
+                            onSelected: (_) =>
+                                setState(() => _activity = activity)))),
+                  ])),
+          const Divider(height: 24),
+          _MarkdownToolbar(onInsert: _insertMarkdown),
+          const Divider(height: 1),
+          Expanded(
+              child: _preview
+                  ? Markdown(
+                      data: _content.text.isEmpty ? '*还没有内容*' : _content.text,
+                      padding: const EdgeInsets.all(20))
+                  : TextField(
+                      controller: _content,
+                      focusNode: _contentFocus,
+                      expands: true,
+                      maxLines: null,
+                      minLines: null,
+                      textAlignVertical: TextAlignVertical.top,
+                      style: const TextStyle(
+                          fontSize: 15, height: 1.6, color: _ink),
+                      decoration: const InputDecoration(
+                          contentPadding: EdgeInsets.all(20),
+                          hintText: '写下今天的片段、感受或念头…',
+                          border: InputBorder.none))),
+        ]),
+      );
+
+  void _insertMarkdown(String prefix, String suffix) {
+    final value = _content.value;
+    final range = value.selection;
+    final selected =
+        range.isValid ? value.text.substring(range.start, range.end) : '';
+    final replacement = '$prefix${selected.isEmpty ? '文字' : selected}$suffix';
+    _content.value = value.copyWith(
+        text: value.text.replaceRange(range.start, range.end, replacement),
+        selection:
+            TextSelection.collapsed(offset: range.start + replacement.length));
+    _contentFocus.requestFocus();
+  }
+
+  Future<void> _save() async {
+    if (_title.text.trim().isEmpty && _content.text.trim().isEmpty) {
+      if (mounted) Navigator.pop(context);
+      return;
+    }
+    await widget.diaryStore.save(MobileDiary(
+        id: widget.diary?.id ??
+            DateTime.now().microsecondsSinceEpoch.toString(),
+        title: _title.text.trim(),
+        content: _content.text,
+        mood: _mood,
+        activity: _activity,
+        createdAt: widget.diary?.createdAt ?? DateTime.now()));
+    if (mounted) Navigator.pop(context);
+  }
+}
+
+String _diaryDayLabel(DateTime value) {
+  final today = DateUtils.dateOnly(DateTime.now());
+  final day = DateUtils.dateOnly(value);
+  if (day == today) return '今天';
+  if (day == today.subtract(const Duration(days: 1))) return '昨天';
+  return '${value.month}月${value.day}日';
+}
+
+String _diaryTimeLabel(DateTime value) {
+  final hour = value.hour.toString().padLeft(2, '0');
+  final minute = value.minute.toString().padLeft(2, '0');
+  return '${_diaryDayLabel(value)} $hour:$minute';
 }
 
 class NotesPage extends StatefulWidget {
