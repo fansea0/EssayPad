@@ -537,10 +537,7 @@ class _MobileShellState extends State<MobileShell> {
     final page = switch (_index) {
       0 => HomePage(store: widget.store, diaryStore: widget.diaryStore),
       1 => TasksPage(taskStore: widget.taskStore),
-      3 => const PlaceholderPage(
-          icon: Icons.chat_bubble_outline,
-          title: 'AI 对话',
-          description: '从周报里的发现，继续聊下去。'),
+      3 => const WeeklyReflectionPage(),
       _ => const PlaceholderPage(
           icon: Icons.person_outline,
           title: '我的',
@@ -2291,6 +2288,220 @@ class _MarkdownToolbar extends StatelessWidget {
                   tooltip: '列表'),
             ]));
   }
+}
+
+class WeeklyReflectionPage extends StatefulWidget {
+  const WeeklyReflectionPage({super.key});
+
+  @override
+  State<WeeklyReflectionPage> createState() => _WeeklyReflectionPageState();
+}
+
+class _WeeklyReflectionPageState extends State<WeeklyReflectionPage> {
+  final _input = TextEditingController();
+  final List<_ReflectionMessage> _messages = [
+    const _ReflectionMessage(
+        content:
+            '这周你把移动端的笔记、日记和任务慢慢连成了一套体验。最让我高兴的是，你没有只停在功能清单，而是在反复问：它用起来会不会舒服？',
+        isUser: false),
+  ];
+  final _questions = const ['我这周最值得保留的习惯是什么？', '下周我该先完成哪一件事？', '你觉得我哪里有点用力过猛？'];
+
+  @override
+  void dispose() {
+    _input.dispose();
+    super.dispose();
+  }
+
+  void _send([String? value]) {
+    final text = (value ?? _input.text).trim();
+    if (text.isEmpty) return;
+    setState(() {
+      _messages.add(_ReflectionMessage(content: text, isUser: true));
+      _messages.add(const _ReflectionMessage(
+          content:
+              '我会把它放回这周的记录里一起看。你已经把很多零散想法推进成了真实页面，下周不妨挑一个最想用的流程，连续用三天，再决定要不要继续加功能。🌱',
+          isUser: false));
+      _input.clear();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+      backgroundColor: _canvas,
+      appBar: AppBar(
+          title: const Text('AI 周复盘',
+              style: TextStyle(fontWeight: FontWeight.w700))),
+      body: SafeArea(
+          top: false,
+          child: Column(children: [
+            Expanded(
+                child: ListView(
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+                    children: [
+                  const _ReflectionHero(),
+                  const SizedBox(height: 20),
+                  const _ReflectionSection(
+                      title: '本周故事',
+                      icon: Icons.menu_book_outlined,
+                      content:
+                          '这周的主线很清楚：你一边修整桌面端的记录体验，一边把它带到移动端。任务、日记和笔记不再是分散的页面，开始有了同一个人的使用节奏。'),
+                  const _ReflectionSection(
+                      title: '我观察到的你',
+                      icon: Icons.visibility_outlined,
+                      content: '你最近特别在意“用起来是否顺手”。这不是反复折腾细节，而是产品感正在长出来。'),
+                  const _ReflectionSection(
+                      title: '本周成长',
+                      icon: Icons.spa_outlined,
+                      content: '你已经从“把功能做出来”走到了“让内容彼此连接”。这会让后面的 AI 和多端能力更有意义。'),
+                  const _ReflectionSection(
+                      title: '下周建议',
+                      icon: Icons.flag_outlined,
+                      content:
+                          '先完整使用一次移动端的核心流程：记一篇日记、完成一项任务、做一次周复盘。把最不顺手的地方留下来，再动手。'),
+                  const SizedBox(height: 22),
+                  const Text('继续聊聊这一周',
+                      style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: _ink)),
+                  const SizedBox(height: 10),
+                  Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _questions
+                          .map((question) => ActionChip(
+                              label: Text(question,
+                                  style: const TextStyle(fontSize: 12)),
+                              onPressed: () => _send(question)))
+                          .toList()),
+                  const SizedBox(height: 14),
+                  ..._messages
+                      .map((message) => _MessageBubble(message: message)),
+                ])),
+            _ReflectionComposer(controller: _input, onSend: _send),
+          ])));
+}
+
+class _ReflectionHero extends StatelessWidget {
+  const _ReflectionHero();
+  @override
+  Widget build(BuildContext context) => Container(
+      padding: const EdgeInsets.all(19),
+      decoration: BoxDecoration(
+          color: const Color(0xFFECE9FF),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: Colors.white)),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Container(
+            width: 44,
+            height: 44,
+            decoration: const BoxDecoration(
+                color: Color(0xFF6959E8), shape: BoxShape.circle),
+            child: const Icon(Icons.auto_awesome, color: Colors.white)),
+        const SizedBox(width: 13),
+        const Expanded(
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('这一周过得怎么样？',
+              style: TextStyle(
+                  fontSize: 19, fontWeight: FontWeight.w700, color: _ink)),
+          SizedBox(height: 7),
+          Text('7月6日 - 7月12日 · 3 个任务 · 2 篇日记',
+              style: TextStyle(fontSize: 13, color: Color(0xFF6C7287))),
+          SizedBox(height: 10),
+          Text('你没有停在“想做”，而是在一点点把自己的工具做成可用的样子。',
+              style: TextStyle(fontSize: 14, height: 1.45, color: _ink)),
+        ]))
+      ]));
+}
+
+class _ReflectionSection extends StatelessWidget {
+  const _ReflectionSection(
+      {required this.title, required this.icon, required this.content});
+  final String title;
+  final IconData icon;
+  final String content;
+  @override
+  Widget build(BuildContext context) => Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+              color: Colors.white, borderRadius: BorderRadius.circular(14)),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              Icon(icon, size: 19, color: _mint),
+              const SizedBox(width: 8),
+              Text(title,
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w700, color: _ink))
+            ]),
+            const SizedBox(height: 10),
+            Text(content,
+                style: const TextStyle(
+                    fontSize: 14, height: 1.55, color: Color(0xFF647081)))
+          ])));
+}
+
+class _ReflectionMessage {
+  const _ReflectionMessage({required this.content, required this.isUser});
+  final String content;
+  final bool isUser;
+}
+
+class _MessageBubble extends StatelessWidget {
+  const _MessageBubble({required this.message});
+  final _ReflectionMessage message;
+  @override
+  Widget build(BuildContext context) => Align(
+      alignment: message.isUser ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+          constraints: const BoxConstraints(maxWidth: 310),
+          decoration: BoxDecoration(
+              color: message.isUser ? const Color(0xFF6354E8) : Colors.white,
+              borderRadius: BorderRadius.circular(14)),
+          child: Text(message.content,
+              style: TextStyle(
+                  fontSize: 14,
+                  height: 1.45,
+                  color: message.isUser ? Colors.white : _ink))));
+}
+
+class _ReflectionComposer extends StatelessWidget {
+  const _ReflectionComposer({required this.controller, required this.onSend});
+  final TextEditingController controller;
+  final VoidCallback onSend;
+
+  @override
+  Widget build(BuildContext context) => Container(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+      color: Colors.white,
+      child: Row(children: [
+        Expanded(
+            child: TextField(
+                controller: controller,
+                onSubmitted: (_) => onSend(),
+                decoration: InputDecoration(
+                    hintText: '继续聊聊这一周…',
+                    isDense: true,
+                    filled: true,
+                    fillColor: const Color(0xFFF5F6F8),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none)))),
+        const SizedBox(width: 8),
+        IconButton(
+            onPressed: onSend,
+            icon: const Icon(Icons.arrow_upward),
+            color: Colors.white,
+            style:
+                IconButton.styleFrom(backgroundColor: const Color(0xFF6354E8)),
+            tooltip: '发送')
+      ]));
 }
 
 class PlaceholderPage extends StatelessWidget {
