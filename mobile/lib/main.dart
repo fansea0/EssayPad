@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -13,9 +14,12 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final store = NotesStore();
   final diaryStore = DiaryStore();
+  final taskStore = TaskStore();
   await store.load();
   await diaryStore.load();
-  runApp(EssayPadMobile(store: store, diaryStore: diaryStore));
+  await taskStore.load();
+  runApp(EssayPadMobile(
+      store: store, diaryStore: diaryStore, taskStore: taskStore));
 }
 
 class EssayPadMobile extends StatelessWidget {
@@ -23,10 +27,12 @@ class EssayPadMobile extends StatelessWidget {
     super.key,
     required this.store,
     required this.diaryStore,
+    required this.taskStore,
   });
 
   final NotesStore store;
   final DiaryStore diaryStore;
+  final TaskStore taskStore;
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +46,8 @@ class EssayPadMobile extends StatelessWidget {
         appBarTheme:
             const AppBarTheme(backgroundColor: _canvas, foregroundColor: _ink),
       ),
-      home: MobileShell(store: store, diaryStore: diaryStore),
+      home: MobileShell(
+          store: store, diaryStore: diaryStore, taskStore: taskStore),
     );
   }
 }
@@ -166,6 +173,104 @@ class MobileDiary {
   }
 }
 
+enum TaskPriority {
+  normal('普通', Color(0xFF93A0AF)),
+  important('重要', Color(0xFFFF9A3D)),
+  urgent('紧急', Color(0xFFE85D5D));
+
+  const TaskPriority(this.label, this.color);
+  final String label;
+  final Color color;
+}
+
+enum TaskStatus { active, done, abandoned }
+
+enum TaskGroup {
+  today('今天'),
+  yesterday('昨天'),
+  week('本周'),
+  all('全部'),
+  longTerm('长期');
+
+  const TaskGroup(this.label);
+  final String label;
+}
+
+class MobileTask {
+  const MobileTask({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.progress,
+    required this.priority,
+    required this.status,
+    required this.dueAt,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.focusMinutes,
+  });
+
+  final String id;
+  final String title;
+  final String description;
+  final int progress;
+  final TaskPriority priority;
+  final TaskStatus status;
+  final DateTime dueAt;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final int focusMinutes;
+
+  bool get isDone => status == TaskStatus.done;
+
+  MobileTask copyWith({
+    String? title,
+    String? description,
+    int? progress,
+    TaskPriority? priority,
+    TaskStatus? status,
+    DateTime? dueAt,
+    DateTime? updatedAt,
+    int? focusMinutes,
+  }) =>
+      MobileTask(
+          id: id,
+          title: title ?? this.title,
+          description: description ?? this.description,
+          progress: progress ?? this.progress,
+          priority: priority ?? this.priority,
+          status: status ?? this.status,
+          dueAt: dueAt ?? this.dueAt,
+          createdAt: createdAt,
+          updatedAt: updatedAt ?? this.updatedAt,
+          focusMinutes: focusMinutes ?? this.focusMinutes);
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'description': description,
+        'progress': progress,
+        'priority': priority.name,
+        'status': status.name,
+        'dueAt': dueAt.toIso8601String(),
+        'createdAt': createdAt.toIso8601String(),
+        'updatedAt': updatedAt.toIso8601String(),
+        'focusMinutes': focusMinutes,
+      };
+
+  factory MobileTask.fromJson(Map<String, dynamic> json) => MobileTask(
+      id: json['id'] as String,
+      title: json['title'] as String,
+      description: json['description'] as String,
+      progress: json['progress'] as int,
+      priority: TaskPriority.values.byName(json['priority'] as String),
+      status: TaskStatus.values.byName(json['status'] as String),
+      dueAt: DateTime.parse(json['dueAt'] as String),
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      focusMinutes: json['focusMinutes'] as int);
+}
+
 class NotesStore extends ChangeNotifier {
   static const _storageKey = 'essaypad.mobile.notes.v1';
   NotesStore({List<MobileNote>? seed}) : _notes = List.of(seed ?? const []);
@@ -229,6 +334,113 @@ class NotesStore extends ChangeNotifier {
           content: '笔记和日记放在一起，页面保持紧凑。',
           category: NoteCategory.requirement,
           updatedAt: now.subtract(const Duration(hours: 4))),
+    ];
+  }
+}
+
+class TaskStore extends ChangeNotifier {
+  static const _storageKey = 'essaypad.mobile.tasks.v1';
+  TaskStore({List<MobileTask>? seed}) : _tasks = List.of(seed ?? const []);
+  final List<MobileTask> _tasks;
+
+  List<MobileTask> get tasks {
+    final result = List<MobileTask>.of(_tasks);
+    result.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    return List.unmodifiable(result);
+  }
+
+  Future<void> load() async {
+    final preferences = await SharedPreferences.getInstance();
+    final raw = preferences.getString(_storageKey);
+    if (raw == null) {
+      if (_tasks.isEmpty) {
+        _tasks.addAll(_seedTasks());
+        await _persist();
+      }
+      return;
+    }
+    _tasks
+      ..clear()
+      ..addAll((jsonDecode(raw) as List<dynamic>)
+          .map((item) => MobileTask.fromJson(item as Map<String, dynamic>)));
+    notifyListeners();
+  }
+
+  Future<void> save(MobileTask task) async {
+    final index = _tasks.indexWhere((item) => item.id == task.id);
+    if (index < 0) {
+      _tasks.add(task);
+    } else {
+      _tasks[index] = task;
+    }
+    await _persist();
+    notifyListeners();
+  }
+
+  Future<void> updateProgress(String id, int progress) async {
+    final index = _tasks.indexWhere((item) => item.id == id);
+    if (index < 0) return;
+    final value = progress.clamp(0, 100);
+    _tasks[index] = _tasks[index].copyWith(
+        progress: value,
+        status: value == 100 ? TaskStatus.done : TaskStatus.active,
+        updatedAt: DateTime.now());
+    await _persist();
+    notifyListeners();
+  }
+
+  Future<void> addFocusMinutes(String id, int minutes) async {
+    final index = _tasks.indexWhere((item) => item.id == id);
+    if (index < 0 || minutes <= 0) return;
+    _tasks[index] = _tasks[index].copyWith(
+        focusMinutes: _tasks[index].focusMinutes + minutes,
+        updatedAt: DateTime.now());
+    await _persist();
+    notifyListeners();
+  }
+
+  Future<void> _persist() async {
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setString(
+        _storageKey, jsonEncode(_tasks.map((task) => task.toJson()).toList()));
+  }
+
+  static List<MobileTask> _seedTasks() {
+    final now = DateTime.now();
+    return [
+      MobileTask(
+          id: 'task-mobile',
+          title: '完成移动端任务功能',
+          description: '补齐任务列表、详情和专注计时。',
+          progress: 50,
+          priority: TaskPriority.urgent,
+          status: TaskStatus.active,
+          dueAt: now,
+          createdAt: now,
+          updatedAt: now,
+          focusMinutes: 25),
+      MobileTask(
+          id: 'task-review',
+          title: '整理本周产品反馈',
+          description: '提炼反馈中的共性问题，写入下周计划。',
+          progress: 25,
+          priority: TaskPriority.important,
+          status: TaskStatus.active,
+          dueAt: now,
+          createdAt: now,
+          updatedAt: now.subtract(const Duration(hours: 2)),
+          focusMinutes: 10),
+      MobileTask(
+          id: 'task-long',
+          title: '规划多端同步',
+          description: '为后续移动端与 Mac 端数据同步做准备。',
+          progress: 0,
+          priority: TaskPriority.important,
+          status: TaskStatus.active,
+          dueAt: now.add(const Duration(days: 30)),
+          createdAt: now,
+          updatedAt: now.subtract(const Duration(days: 1)),
+          focusMinutes: 0),
     ];
   }
 }
@@ -303,9 +515,15 @@ class DiaryStore extends ChangeNotifier {
 }
 
 class MobileShell extends StatefulWidget {
-  const MobileShell({super.key, required this.store, required this.diaryStore});
+  const MobileShell({
+    super.key,
+    required this.store,
+    required this.diaryStore,
+    required this.taskStore,
+  });
   final NotesStore store;
   final DiaryStore diaryStore;
+  final TaskStore taskStore;
 
   @override
   State<MobileShell> createState() => _MobileShellState();
@@ -318,10 +536,7 @@ class _MobileShellState extends State<MobileShell> {
   Widget build(BuildContext context) {
     final page = switch (_index) {
       0 => HomePage(store: widget.store, diaryStore: widget.diaryStore),
-      1 => const PlaceholderPage(
-          icon: Icons.check_circle_outline,
-          title: '任务',
-          description: '今天的重要事情会在这里。'),
+      1 => TasksPage(taskStore: widget.taskStore),
       3 => const PlaceholderPage(
           icon: Icons.chat_bubble_outline,
           title: 'AI 对话',
@@ -1063,6 +1278,421 @@ class _NavItem extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class TasksPage extends StatefulWidget {
+  const TasksPage({super.key, required this.taskStore});
+  final TaskStore taskStore;
+  @override
+  State<TasksPage> createState() => _TasksPageState();
+}
+
+class _TasksPageState extends State<TasksPage> {
+  var _group = TaskGroup.today;
+
+  List<MobileTask> _filtered(List<MobileTask> source) {
+    final today = DateUtils.dateOnly(DateTime.now());
+    return source.where((task) {
+      final day = DateUtils.dateOnly(task.dueAt);
+      return switch (_group) {
+        TaskGroup.today => day == today,
+        TaskGroup.yesterday => day == today.subtract(const Duration(days: 1)),
+        TaskGroup.week =>
+          !day.isBefore(today.subtract(Duration(days: today.weekday - 1))),
+        TaskGroup.longTerm =>
+          task.priority == TaskPriority.important && !task.isDone,
+        TaskGroup.all => true,
+      };
+    }).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+      animation: widget.taskStore,
+      builder: (context, _) {
+        final tasks = _filtered(widget.taskStore.tasks);
+        final active = tasks.where((task) => !task.isDone).toList();
+        final done = tasks.where((task) => task.isDone).toList();
+        return Scaffold(
+          backgroundColor: _canvas,
+          appBar: AppBar(
+              title: Text('任务 · ${done.length}/${tasks.length} 完成',
+                  style: const TextStyle(fontWeight: FontWeight.w700)),
+              actions: [
+                IconButton(
+                    onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                TaskDetailPage(taskStore: widget.taskStore))),
+                    icon: const Icon(Icons.add),
+                    tooltip: '新建任务'),
+              ]),
+          body: Column(children: [
+            SizedBox(
+                height: 46,
+                child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    children: TaskGroup.values
+                        .map((group) => Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: ChoiceChip(
+                                label: Text(group.label),
+                                selected: _group == group,
+                                selectedColor: const Color(0x226454E5),
+                                onSelected: (_) =>
+                                    setState(() => _group = group))))
+                        .toList())),
+            Expanded(
+                child: active.isEmpty && done.isEmpty
+                    ? const Center(child: Text('暂无任务'))
+                    : ListView(
+                        padding: const EdgeInsets.fromLTRB(20, 10, 20, 28),
+                        children: [
+                            ...TaskPriority.values.reversed.map((priority) {
+                              final section = active
+                                  .where((task) => task.priority == priority)
+                                  .toList();
+                              if (section.isEmpty) {
+                                return const SizedBox.shrink();
+                              }
+                              return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                        padding: const EdgeInsets.only(
+                                            top: 8, bottom: 7),
+                                        child: Text(
+                                            '${priority.label} · ${section.length}',
+                                            style: TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w700,
+                                                color: priority.color))),
+                                    ...section.map((task) => Padding(
+                                        padding:
+                                            const EdgeInsets.only(bottom: 10),
+                                        child: TaskCard(
+                                            task: task,
+                                            onTap: () => Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (_) =>
+                                                        TaskDetailPage(
+                                                            taskStore: widget
+                                                                .taskStore,
+                                                            task: task))),
+                                            onComplete: () => widget.taskStore
+                                                .updateProgress(
+                                                    task.id, 100)))),
+                                  ]);
+                            }),
+                            if (done.isNotEmpty) ...[
+                              const Padding(
+                                  padding: EdgeInsets.only(top: 14, bottom: 7),
+                                  child: Text('已完成',
+                                      style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w700,
+                                          color: _mint))),
+                              ...done.map((task) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: TaskCard(
+                                      task: task,
+                                      onTap: () => Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (_) => TaskDetailPage(
+                                                  taskStore: widget.taskStore,
+                                                  task: task))),
+                                      onComplete: () {}))),
+                            ],
+                          ])),
+          ]),
+        );
+      });
+}
+
+class TaskCard extends StatelessWidget {
+  const TaskCard(
+      {super.key,
+      required this.task,
+      required this.onTap,
+      required this.onComplete});
+  final MobileTask task;
+  final VoidCallback onTap;
+  final VoidCallback onComplete;
+  @override
+  Widget build(BuildContext context) => Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+          child: Padding(
+              padding: const EdgeInsets.all(14),
+              child:
+                  Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                IconButton(
+                    onPressed: task.isDone ? null : onComplete,
+                    icon: Icon(
+                        task.isDone
+                            ? Icons.check_circle
+                            : Icons.circle_outlined,
+                        color: task.isDone ? _mint : task.priority.color),
+                    tooltip: '标记完成',
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints()),
+                const SizedBox(width: 12),
+                Expanded(
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                      Text(task.title,
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color:
+                                  task.isDone ? const Color(0xFF98A1AD) : _ink,
+                              decoration: task.isDone
+                                  ? TextDecoration.lineThrough
+                                  : null)),
+                      if (task.description.isNotEmpty)
+                        Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Text(task.description,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                    fontSize: 12, color: Color(0xFF778190)))),
+                      const SizedBox(height: 10),
+                      ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                              value: task.progress / 100,
+                              minHeight: 6,
+                              color: task.isDone ? _mint : task.priority.color,
+                              backgroundColor: const Color(0xFFE9EDF0))),
+                      const SizedBox(height: 8),
+                      Row(children: [
+                        Text('${task.progress}%',
+                            style: TextStyle(
+                                fontSize: 11, color: task.priority.color)),
+                        const Spacer(),
+                        const Icon(Icons.timer_outlined,
+                            size: 14, color: Color(0xFF7D8795)),
+                        const SizedBox(width: 3),
+                        Text('${task.focusMinutes} 分钟',
+                            style: const TextStyle(
+                                fontSize: 11, color: Color(0xFF7D8795)))
+                      ]),
+                    ])),
+              ]))));
+}
+
+class TaskDetailPage extends StatefulWidget {
+  const TaskDetailPage({super.key, required this.taskStore, this.task});
+  final TaskStore taskStore;
+  final MobileTask? task;
+  @override
+  State<TaskDetailPage> createState() => _TaskDetailPageState();
+}
+
+class _TaskDetailPageState extends State<TaskDetailPage> {
+  late final TextEditingController _title =
+      TextEditingController(text: widget.task?.title ?? '');
+  late final TextEditingController _description =
+      TextEditingController(text: widget.task?.description ?? '');
+  late TaskPriority _priority = widget.task?.priority ?? TaskPriority.normal;
+  late int _progress = widget.task?.progress ?? 0;
+  late DateTime _dueAt = widget.task?.dueAt ?? DateTime.now();
+  @override
+  void dispose() {
+    _title.dispose();
+    _description.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+          backgroundColor: Colors.white,
+          title: Text(widget.task == null ? '新建任务' : '任务详情',
+              style: const TextStyle(fontWeight: FontWeight.w700)),
+          actions: [TextButton(onPressed: _save, child: const Text('完成'))]),
+      body: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 32),
+          children: [
+            TextField(
+                controller: _title,
+                style:
+                    const TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+                decoration: const InputDecoration(
+                    hintText: '任务标题', border: InputBorder.none)),
+            TextField(
+                controller: _description,
+                minLines: 3,
+                maxLines: 6,
+                decoration: const InputDecoration(
+                    hintText: '补充任务说明…', border: OutlineInputBorder())),
+            const SizedBox(height: 22),
+            const Text('优先级', style: TextStyle(fontWeight: FontWeight.w700)),
+            const SizedBox(height: 8),
+            Wrap(
+                spacing: 8,
+                children: TaskPriority.values
+                    .map((priority) => ChoiceChip(
+                        label: Text(priority.label),
+                        selected: _priority == priority,
+                        selectedColor: priority.color.withValues(alpha: .15),
+                        onSelected: (_) =>
+                            setState(() => _priority = priority)))
+                    .toList()),
+            const SizedBox(height: 22),
+            Text('进度 $_progress%',
+                style: const TextStyle(fontWeight: FontWeight.w700)),
+            Slider(
+                value: _progress.toDouble(),
+                min: 0,
+                max: 100,
+                divisions: 4,
+                label: '$_progress%',
+                onChanged: (value) =>
+                    setState(() => _progress = value.round())),
+            ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.event_outlined),
+                title: const Text('截止日期'),
+                trailing: Text('${_dueAt.month}月${_dueAt.day}日'),
+                onTap: () async {
+                  final date = await showDatePicker(
+                      context: context,
+                      firstDate:
+                          DateTime.now().subtract(const Duration(days: 365)),
+                      lastDate: DateTime.now().add(const Duration(days: 3650)),
+                      initialDate: _dueAt);
+                  if (date != null) {
+                    setState(() => _dueAt = date);
+                  }
+                }),
+            if (widget.task != null) ...[
+              const Divider(height: 36),
+              ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.timer_outlined, color: _coral),
+                  title: const Text('专注'),
+                  subtitle: Text('累计 ${widget.task!.focusMinutes} 分钟'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => FocusTimerPage(
+                              taskStore: widget.taskStore,
+                              task: widget.task!)))),
+            ],
+          ]));
+  Future<void> _save() async {
+    if (_title.text.trim().isEmpty) {
+      Navigator.pop(context);
+      return;
+    }
+    final now = DateTime.now();
+    final task = MobileTask(
+        id: widget.task?.id ?? now.microsecondsSinceEpoch.toString(),
+        title: _title.text.trim(),
+        description: _description.text.trim(),
+        progress: _progress,
+        priority: _priority,
+        status: _progress == 100 ? TaskStatus.done : TaskStatus.active,
+        dueAt: _dueAt,
+        createdAt: widget.task?.createdAt ?? now,
+        updatedAt: now,
+        focusMinutes: widget.task?.focusMinutes ?? 0);
+    await widget.taskStore.save(task);
+    if (mounted) Navigator.pop(context);
+  }
+}
+
+class FocusTimerPage extends StatefulWidget {
+  const FocusTimerPage(
+      {super.key, required this.taskStore, required this.task});
+  final TaskStore taskStore;
+  final MobileTask task;
+  @override
+  State<FocusTimerPage> createState() => _FocusTimerPageState();
+}
+
+class _FocusTimerPageState extends State<FocusTimerPage> {
+  var _seconds = 25 * 60;
+  var _running = false;
+  Timer? _timer;
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _toggle() {
+    setState(() => _running = !_running);
+    if (_running) {
+      _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (_seconds <= 0) {
+          _finish();
+        } else {
+          setState(() => _seconds--);
+        }
+      });
+    } else {
+      _timer?.cancel();
+    }
+  }
+
+  Future<void> _finish() async {
+    _timer?.cancel();
+    final minutes = ((25 * 60 - _seconds) / 60).ceil();
+    await widget.taskStore.addFocusMinutes(widget.task.id, minutes);
+    if (mounted) Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final m = (_seconds ~/ 60).toString().padLeft(2, '0');
+    final s = (_seconds % 60).toString().padLeft(2, '0');
+    return Scaffold(
+        backgroundColor: const Color(0xFF17261F),
+        appBar: AppBar(
+            backgroundColor: const Color(0xFF17261F),
+            foregroundColor: Colors.white,
+            title: const Text('专注')),
+        body: Center(
+            child:
+                Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Text(widget.task.title,
+              style: const TextStyle(color: Colors.white70, fontSize: 16)),
+          const SizedBox(height: 26),
+          Text('$m:$s',
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 64,
+                  fontWeight: FontWeight.w700,
+                  fontFeatures: [FontFeature.tabularFigures()])),
+          const SizedBox(height: 32),
+          FilledButton.icon(
+              onPressed: _toggle,
+              icon: Icon(_running ? Icons.pause : Icons.play_arrow),
+              label: Text(_running ? '暂停' : '开始专注'),
+              style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFF54B879),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 28, vertical: 15))),
+          const SizedBox(height: 14),
+          TextButton(
+              onPressed: _finish,
+              child: const Text('结束并记录时长',
+                  style: TextStyle(color: Colors.white70)))
+        ])));
   }
 }
 

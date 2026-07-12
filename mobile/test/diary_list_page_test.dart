@@ -24,6 +24,7 @@ void main() {
     await tester.pumpWidget(EssayPadMobile(
       store: NotesStore(seed: const []),
       diaryStore: store,
+      taskStore: TaskStore(seed: const []),
     ));
     await tester.pumpAndSettle();
 

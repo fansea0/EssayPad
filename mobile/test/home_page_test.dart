@@ -11,6 +11,7 @@ void main() {
     await tester.pumpWidget(EssayPadMobile(
       store: NotesStore(seed: const []),
       diaryStore: DiaryStore(seed: const []),
+      taskStore: TaskStore(seed: const []),
     ));
 
     expect(find.text('笔记'), findsOneWidget);
