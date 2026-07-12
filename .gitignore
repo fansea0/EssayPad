@@ -15,6 +15,7 @@ mobile/.dart_tool/
 mobile/.flutter-plugins
 mobile/.flutter-plugins-dependencies
 mobile/build/
+mobile/dist/
 mobile/.idea/
 *.swp
 .DS_Store
